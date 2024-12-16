@@ -29,4 +29,5 @@ export interface SharedProps extends Dimensions {
     mapsToken?: string;
     className?: string;
     style?: CSSProperties;
+    geoJSON?: string;
 }
