@@ -271,5 +271,18 @@
                 <description>Triggered when a GeoJSON feature is clicked. The input parameter should match the GeoJSON feature entity.</description>
             </property>
         </propertyGroup>
+        <propertyGroup caption="Drawing">
+            <property key="enablePolygonDrawing" type="boolean" defaultValue="false">
+                <caption>Enable polygon drawing</caption>
+                <description>When enabled, users can draw a polygon on the map.</description>
+            </property>
+            <property key="polygonGeoJSON" type="attribute" required="false">
+                <caption>Polygon GeoJSON</caption>
+                <description>Attribute that will store the drawn polygon as a GeoJSON string.</description>
+                <attributeTypes>
+                    <attributeType name="String" />
+                </attributeTypes>
+            </property>
+        </propertyGroup>
     </properties>
 </widget>

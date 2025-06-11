@@ -1,5 +1,14 @@
-import { createElement, ReactElement, useEffect } from "react";
-import { MapContainer, Marker as MarkerComponent, Popup, TileLayer, useMap, GeoJSON } from "react-leaflet";
+import { createElement, ReactElement, useEffect, useState } from "react";
+import {
+    MapContainer,
+    Marker as MarkerComponent,
+    Popup,
+    TileLayer,
+    useMap,
+    GeoJSON,
+    Polygon,
+    useMapEvents
+} from "react-leaflet";
 import classNames from "classnames";
 import { getDimensions } from "@mendix/widget-plugin-platform/utils/get-dimensions";
 import { SharedProps } from "../../typings/shared";
@@ -7,7 +16,7 @@ import { MapProviderEnum } from "../../typings/MapsProps";
 import { translateZoom } from "../utils/zoom";
 import { latLngBounds, Icon as LeafletIcon, DivIcon, LeafletMouseEvent } from "leaflet";
 import { baseMapLayer } from "../utils/leaflet";
-import { ActionValue } from "mendix";
+import { ActionValue, EditableValue } from "mendix";
 export interface LeafletProps extends SharedProps {
     mapProvider: MapProviderEnum;
     attributionControl: boolean;
@@ -63,6 +72,35 @@ function ExposeMapInstance() {
     }, [map]);
 
     return null;
+}
+
+function PolygonDrawer({
+    enableDrawing,
+    polygonGeoJSON
+}: {
+    enableDrawing: boolean;
+    polygonGeoJSON?: EditableValue<string>;
+}): React.ReactElement | null {
+    const [points, setPoints] = useState<Array<{ lat: number; lng: number }>>([]);
+
+    useMapEvents({
+        click: e => {
+            if (enableDrawing) {
+                setPoints(prev => [...prev, e.latlng]);
+            }
+        },
+        dblclick: e => {
+            if (enableDrawing && points.length >= 3 && polygonGeoJSON) {
+                e.originalEvent.preventDefault();
+                const coords = points.concat([points[0]]).map(p => [p.lng, p.lat]);
+                const geo = { type: "Polygon", coordinates: [coords] } as const;
+                polygonGeoJSON.setValue(JSON.stringify(geo));
+                setPoints([]);
+            }
+        }
+    });
+
+    return points.length > 0 ? <Polygon positions={points} pathOptions={{ color: "blue" }} /> : null;
 }
 
 function GeoJSONLayer({
@@ -177,6 +215,9 @@ export function LeafletMap(props: LeafletProps): ReactElement {
                         ))}
                     <SetBoundsComponent autoZoom={autoZoom} currentLocation={currentLocation} locations={locations} />
                     <ExposeMapInstance />
+                    {props.enablePolygonDrawing && (
+                        <PolygonDrawer enableDrawing={props.enablePolygonDrawing} polygonGeoJSON={props.polygonGeoJSON} />
+                    )}
                     {geoJSON && <GeoJSONLayer geoJSON={geoJSON} onGeoJSONClick={onGeoJSONClick} />}
                 </MapContainer>
             </div>

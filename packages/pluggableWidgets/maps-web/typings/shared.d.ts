@@ -1,5 +1,6 @@
 import { Dimensions } from "@mendix/widget-plugin-platform/utils/get-dimensions";
 import { CSSProperties } from "react";
+import { ActionValue, EditableValue } from "mendix";
 export interface ModeledMarker {
     address?: string;
     latitude?: number;
@@ -31,4 +32,6 @@ export interface SharedProps extends Dimensions {
     style?: CSSProperties;
     geoJSON?: string;
     onGeoJSONClick?: ActionValue;
+    enablePolygonDrawing: boolean;
+    polygonGeoJSON?: EditableValue<string>;
 }
