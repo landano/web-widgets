@@ -1,10 +1,10 @@
 {
     "name": "@mendix/charts-web",
-    "version": "5.1.1",
+    "version": "6.2.0",
     "description": "Chart widgets collection for data visualization",
+    "copyright": "© Mendix Technology BV 2025. All rights reserved.",
     "license": "Apache-2.0",
     "private": false,
-    "copyright": "© Mendix Technology BV 2023. All rights reserved.",
     "repository": {
         "type": "git",
         "url": "https://github.com/mendix/web-widgets.git"
@@ -12,12 +12,14 @@
     "mxpackage": {
         "name": "Charts",
         "type": "widget",
+        "changelogType": "module",
         "mpkName": "Charts.mpk",
         "dependencies": [
             "@mendix/area-chart-web",
             "@mendix/bar-chart-web",
             "@mendix/bubble-chart-web",
             "@mendix/column-chart-web",
+            "@mendix/custom-chart-web",
             "@mendix/heatmap-chart-web",
             "@mendix/line-chart-web",
             "@mendix/pie-doughnut-chart-web",
@@ -27,9 +29,10 @@
     },
     "packagePath": "com.mendix.widget.web",
     "marketplace": {
-        "minimumMXVersion": "9.6.0.27784",
+        "minimumMXVersion": "10.6.0.23934",
         "appNumber": 105695,
-        "appName": "Charts"
+        "appName": "Charts",
+        "reactReady": true
     },
     "testProject": {
         "githubUrl": "https://github.com/mendix/Charts-module",
@@ -37,13 +40,13 @@
     },
     "scripts": {
         "build": "ts-node --project scripts/tsconfig.json scripts/build.ts development",
-        "release": "ts-node --project scripts/tsconfig.json scripts/build.ts production",
         "create-gh-release": "rui-create-gh-release",
+        "format": "prettier --ignore-path ./node_modules/@mendix/prettier-config-web-widgets/global-prettierignore --write .",
+        "lint": "tsc --project scripts/tsconfig.json",
         "publish-marketplace": "rui-publish-marketplace",
-        "verify": "rui-verify-package-format",
+        "release": "ts-node --project scripts/tsconfig.json scripts/build.ts production",
         "update-changelog": "rui-update-changelog-module",
-        "format": "prettier --write .",
-        "lint": "tsc --project scripts/tsconfig.json"
+        "verify": "rui-verify-package-format"
     },
     "dependencies": {
         "@mendix/area-chart-web": "workspace:*",
@@ -51,6 +54,7 @@
         "@mendix/bubble-chart-web": "workspace:*",
         "@mendix/chart-playground-web": "workspace:*",
         "@mendix/column-chart-web": "workspace:*",
+        "@mendix/custom-chart-web": "workspace:*",
         "@mendix/heatmap-chart-web": "workspace:*",
         "@mendix/line-chart-web": "workspace:*",
         "@mendix/pie-doughnut-chart-web": "workspace:*",

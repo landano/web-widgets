@@ -4,14 +4,12 @@ import { LoadContentEnum } from "typings/AccordionProps";
 import { useDebouncedResizeObserver, CallResizeObserver } from "../utils/resizeObserver";
 import "../ui/accordion-main.scss";
 
-/* eslint-disable no-unused-vars */
 export const enum Target {
     FIRST = "first",
     LAST = "last",
     PREVIOUS = "previous",
     NEXT = "next"
 }
-/* eslint-enable no-unused-vars */
 
 export type AccordionGroupIcon = { icon: ReactNode } | { expandIcon: ReactNode; collapseIcon: ReactNode };
 
@@ -119,6 +117,7 @@ export function AccordionGroup(props: AccordionGroupProps): ReactElement | null 
             switch (event.key) {
                 case "Enter":
                 case " ":
+                case "Space":
                     event.preventDefault();
                     toggleCollapsed?.();
                     break;

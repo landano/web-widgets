@@ -1,8 +1,9 @@
 import { Big } from "big.js";
 import { MatchSorterOptions, matchSorter } from "match-sorter";
 import { PropsWithChildren, ReactElement, createElement } from "react";
-import { ComboboxPreviewProps, FilterTypeEnum } from "typings/ComboboxProps";
-import { MultiSelector } from "./types";
+import { ComboboxPreviewProps, FilterTypeEnum, SelectedItemsSortingEnum } from "typings/ComboboxProps";
+import { MultiSelector, SortOrder } from "./types";
+import { ObjectItem } from "mendix";
 
 export const DEFAULT_LIMIT_SIZE = 100;
 
@@ -21,9 +22,9 @@ export function getSelectedCaptionsPlaceholder(selector: MultiSelector, selected
         return "";
     }
 
-    const selected = selectedItems.map(v => selector.caption.get(v)).sort();
-    const sortedSelected: string[] = selector.options.sortOrder === "desc" ? selected.reverse() : selected;
-    return sortedSelected.join(", ");
+    const selected = selectedItems.map(v => selector.caption.get(v));
+
+    return selected.join(", ");
 }
 
 export interface CaptionContentProps extends PropsWithChildren {
@@ -40,10 +41,10 @@ export function CaptionContent(props: CaptionContentProps): ReactElement {
         onClick: onClick
             ? onClick
             : htmlFor
-            ? (e: MouseEvent) => {
-                  e.preventDefault();
-              }
-            : undefined
+              ? (e: MouseEvent) => {
+                    e.preventDefault();
+                }
+              : undefined
     });
 }
 
@@ -113,4 +114,38 @@ export function _valuesIsEqual(valueA: ValueType, valueB: ValueType): boolean {
         return valueA.getTime() === valueB.getTime();
     }
     return valueA === valueB;
+}
+
+export function sortSelectedItems(
+    values: ObjectItem[] | null | undefined,
+    sortingType: SelectedItemsSortingEnum,
+    sortOrder: SortOrder,
+    captionGetter: (id: string) => string | undefined
+): string[] | null {
+    if (values) {
+        return sortSelections(
+            values.map(v => (v?.id as string) ?? null),
+            sortingType,
+            sortOrder,
+            captionGetter
+        );
+    } else {
+        return null;
+    }
+}
+
+function sortSelections(
+    newValueIds: string[],
+    sortingType: SelectedItemsSortingEnum,
+    sortOrder: SortOrder,
+    captionGetter: (id: string) => string | undefined
+): string[] {
+    if (sortingType === "caption") {
+        return newValueIds.sort((a, b) => {
+            const captionA = captionGetter(a)?.toString() ?? "";
+            const captionB = captionGetter(b)?.toString() ?? "";
+            return sortOrder === "asc" ? captionA.localeCompare(captionB) : captionB.localeCompare(captionA);
+        });
+    }
+    return newValueIds;
 }

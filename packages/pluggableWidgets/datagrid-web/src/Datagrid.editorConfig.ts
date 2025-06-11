@@ -1,14 +1,4 @@
 import {
-    container,
-    datasource,
-    dropzone,
-    rowLayout,
-    selectable,
-    StructurePreviewProps,
-    text,
-    structurePreviewPalette
-} from "@mendix/widget-plugin-platform/preview/structure-preview-api";
-import {
     changePropertyIn,
     hideNestedPropertiesIn,
     hidePropertiesIn,
@@ -16,6 +6,16 @@ import {
     Properties,
     transformGroupsIntoTabs
 } from "@mendix/pluggable-widgets-tools";
+import {
+    container,
+    datasource,
+    dropzone,
+    rowLayout,
+    selectable,
+    structurePreviewPalette,
+    StructurePreviewProps,
+    text
+} from "@mendix/widget-plugin-platform/preview/structure-preview-api";
 
 import { ColumnsPreviewType, DatagridPreviewProps } from "../typings/DatagridProps";
 
@@ -79,14 +79,27 @@ export function getProperties(
             hideNestedPropertiesIn(defaultProperties, values, "columns", index, [
                 "filterAssociationOptions",
                 "filterAssociationOptionLabel",
-                "fetchOptionsLazy"
+                "fetchOptionsLazy",
+                "filterCaptionType",
+                "filterAssociationOptionLabelAttr"
             ]);
         }
+        if (column.filterCaptionType === "attribute") {
+            hidePropertyIn(defaultProperties, values, "columns", index, "filterAssociationOptionLabel");
+        } else {
+            hidePropertyIn(defaultProperties, values, "columns", index, "filterAssociationOptionLabelAttr");
+        }
     });
-    if (values.pagination !== "buttons") {
+    if (values.pagination === "buttons") {
+        hidePropertyIn(defaultProperties, values, "showNumberOfRows");
+    } else {
         hidePropertyIn(defaultProperties, values, "showPagingButtons");
-        hidePropertyIn(defaultProperties, values, "pagingPosition");
+
+        if (values.showNumberOfRows === false) {
+            hidePropertyIn(defaultProperties, values, "pagingPosition");
+        }
     }
+
     if (values.pagination !== "loadMore") {
         hidePropertyIn(defaultProperties, values, "loadMoreButtonCaption");
     }
@@ -112,13 +125,13 @@ export function getProperties(
                             ? column.attribute
                             : "[No attribute selected]"
                         : column.showContentAs === "dynamicText"
-                        ? column.dynamicText
-                        : "Custom content",
+                          ? column.dynamicText
+                          : "Custom content",
                     column.width === "autoFill"
                         ? "Auto-fill"
                         : column.width === "autoFit"
-                        ? `Auto-fit content`
-                        : `Manual (${column.size})`,
+                          ? `Auto-fit content`
+                          : `Manual (${column.size})`,
                     alignment ? alignment.charAt(0).toUpperCase() + alignment.slice(1) : ""
                 ];
             });
@@ -198,7 +211,9 @@ export const getPreview = (
                   filter: { widgetCount: 0, renderer: () => null },
                   filterAssociation: "",
                   filterAssociationOptionLabel: "",
+                  filterAssociationOptionLabelAttr: "",
                   filterAssociationOptions: {},
+                  filterCaptionType: "attribute",
                   header: "Column",
                   hidable: "no",
                   resizable: false,
@@ -233,7 +248,7 @@ export const getPreview = (
                       })(
                           text({ fontSize: 10, fontColor: palette.text.secondary })(
                               column.showContentAs === "dynamicText"
-                                  ? column.dynamicText ?? "Dynamic text"
+                                  ? (column.dynamicText ?? "Dynamic text")
                                   : `[${column.attribute ? column.attribute : "No attribute selected"}]`
                           )
                       )
@@ -299,8 +314,8 @@ export const getPreview = (
                                 fontColor: column.header
                                     ? undefined
                                     : isColumnHidden
-                                    ? modeColor("#4F4F4F", "#DCDCDC")
-                                    : palette.text.secondary
+                                      ? modeColor("#4F4F4F", "#DCDCDC")
+                                      : palette.text.secondary
                             })(column.header ? column.header : "Header")
                         ),
                         ...(hasColumns && values.columnsFilterable

@@ -5,9 +5,9 @@ import {
     ListAttributeValueBuilder,
     list,
     obj,
-    ReferenceValueBuilder
+    ReferenceValueBuilder,
+    setupIntersectionObserverStub
 } from "@mendix/widget-plugin-test-utils";
-import "./__mocks__/intersectionObserverMock";
 import "@testing-library/jest-dom";
 import { fireEvent, render, RenderResult, act, waitFor } from "@testing-library/react";
 import { ListValue } from "mendix";
@@ -24,6 +24,9 @@ async function getInput(component: RenderResult): Promise<HTMLInputElement> {
 }
 
 describe("Combo box (Association)", () => {
+    beforeAll(() => {
+        setupIntersectionObserverStub();
+    });
     let defaultProps: ComboboxContainerProps;
     beforeEach(() => {
         defaultProps = {
@@ -41,7 +44,7 @@ describe("Combo box (Association)", () => {
             optionsSourceAssociationCustomContentType: "no",
             optionsSourceAssociationCustomContent: undefined,
             emptyOptionText: dynamic("Select an option 111"),
-            ariaRequired: true,
+            ariaRequired: dynamic(true),
             clearable: true,
             filterType: "contains",
             selectedItemsStyle: "text",
@@ -59,7 +62,6 @@ describe("Combo box (Association)", () => {
             showFooter: false,
             databaseAttributeString: new EditableValueBuilder<string | Big>().build(),
             optionsSourceDatabaseCaptionType: "attribute",
-            optionsSourceDatabaseDefaultValue: dynamic("empty value"),
             optionsSourceDatabaseCustomContentType: "yes",
             staticDataSourceCustomContentType: "no",
             staticAttribute: new EditableValueBuilder<string>().build(),
@@ -74,7 +76,10 @@ describe("Combo box (Association)", () => {
                     staticDataSourceCustomContent: undefined,
                     staticDataSourceCaption: dynamic("caption2")
                 }
-            ]
+            ],
+            selectedItemsSorting: "none",
+            customEditability: "default",
+            customEditabilityExpression: dynamic(false)
         };
         if (defaultProps.optionsSourceAssociationCaptionType === "expression") {
             defaultProps.optionsSourceAssociationCaptionExpression!.get = i => dynamic(`${i.id}`);
@@ -109,7 +114,7 @@ describe("Combo box (Association)", () => {
         const option1 = await component.findByText("obj_222");
         fireEvent.click(option1);
         expect(input.value).toEqual("obj_222");
-        expect(defaultProps.attributeAssociation?.setValue).toBeCalled();
+        expect(defaultProps.attributeAssociation?.setValue).toHaveBeenCalled();
         expect(component.queryAllByRole("option")).toHaveLength(0);
         expect(defaultProps.attributeAssociation?.value).toEqual({ id: "obj_222" });
     });
@@ -127,7 +132,7 @@ describe("Combo box (Association)", () => {
         fireEvent.click(option1);
 
         expect(input.value).toEqual("obj_222");
-        expect(defaultProps.attributeAssociation?.setValue).toBeCalled();
+        expect(defaultProps.attributeAssociation?.setValue).toHaveBeenCalled();
         expect(component.queryAllByRole("option")).toHaveLength(0);
         expect(defaultProps.attributeAssociation?.value).toEqual({ id: "obj_222" });
 

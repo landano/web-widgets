@@ -1,14 +1,18 @@
 {
     "name": "@mendix/widget-plugin-filtering",
-    "version": "1.0.1",
+    "version": "1.1.1",
     "description": "Filtering API plugin.",
+    "copyright": "© Mendix Technology BV 2025. All rights reserved.",
     "license": "Apache-2.0",
-    "copyright": "© Mendix Technology BV 2023. All rights reserved.",
     "repository": {
         "type": "git",
         "url": "https://github.com/mendix/web-widgets.git"
     },
     "type": "module",
+    "files": [
+        "dist",
+        "!*.map"
+    ],
     "exports": {
         "./*": "./dist/*.js"
     },
@@ -19,17 +23,27 @@
             ]
         }
     },
-    "files": [
-        "dist",
-        "!*.map"
-    ],
     "scripts": {
         "build": "tsc",
+        "dev": "tsc --watch",
         "format": "prettier --write .",
-        "lint": "eslint --ext .ts,.tsx ./src",
+        "lint": "eslint src/ package.json",
         "prepare": "tsc",
-        "test": "jest",
-        "dev": "tsc --watch"
+        "test": "jest"
+    },
+    "dependencies": {
+        "@floating-ui/react": "^0.26.27",
+        "@floating-ui/react-dom": "^2.1.2",
+        "@mendix/widget-plugin-external-events": "workspace:*",
+        "@mendix/widget-plugin-hooks": "workspace:*",
+        "@mendix/widget-plugin-platform": "workspace:*",
+        "downshift": "^9.0.8",
+        "mendix": "10.23.70273",
+        "mobx": "6.12.3",
+        "mobx-react-lite": "4.0.7"
+    },
+    "peerDependencies": {
+        "date-fns": "^3.6.0"
     },
     "devDependencies": {
         "@mendix/eslint-config-web-widgets": "workspace:*",
@@ -39,19 +53,6 @@
         "@swc/core": "^1.7.26",
         "@swc/jest": "^0.2.36",
         "date-fns": "^3.6.0",
-        "jest-environment-jsdom": "^29.4.1"
-    },
-    "dependencies": {
-        "@floating-ui/react-dom": "^2.1.2",
-        "@mendix/widget-plugin-external-events": "workspace:*",
-        "@mendix/widget-plugin-hooks": "workspace:*",
-        "@mendix/widget-plugin-platform": "workspace:*",
-        "downshift": "^9.0.8",
-        "mendix": "^10.16.49747",
-        "mobx": "6.12.3",
-        "mobx-react-lite": "4.0.7"
-    },
-    "peerDependencies": {
-        "date-fns": "^3.6.0"
+        "jest-environment-jsdom": "^29.7.0"
     }
 }

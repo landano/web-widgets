@@ -1,14 +1,14 @@
-import { createElement, ReactElement, useEffect, useRef } from "react";
+import { createElement, InputHTMLAttributes, ReactElement, useEffect, useRef } from "react";
+import classNames from "classnames";
 
 export type ThreeStateCheckBoxEnum = "all" | "some" | "none";
 
-export interface ThreeStateCheckBoxProps {
-    id?: string;
+export interface ThreeStateCheckBoxProps
+    extends Omit<InputHTMLAttributes<HTMLInputElement>, "checked" | "value" | "type"> {
     value: ThreeStateCheckBoxEnum;
-    onChange?: () => void;
 }
 
-export function ThreeStateCheckBox({ id, value, onChange }: ThreeStateCheckBoxProps): ReactElement {
+export function ThreeStateCheckBox({ value, className, ...props }: ThreeStateCheckBoxProps): ReactElement {
     const checkboxRef = useRef<HTMLInputElement | null>(null);
     useEffect(() => {
         if (!checkboxRef.current) {
@@ -23,12 +23,11 @@ export function ThreeStateCheckBox({ id, value, onChange }: ThreeStateCheckBoxPr
 
     return (
         <input
-            id={id}
+            {...props}
             type="checkbox"
-            className="three-state-checkbox"
+            className={classNames("three-state-checkbox", className)}
             ref={checkboxRef}
             checked={value !== "none"}
-            onChange={onChange}
         />
     );
 }

@@ -124,13 +124,8 @@
                         <attributeType name="Enum" />
                     </attributeTypes>
                 </property>
-                <property key="optionsSourceDatabaseDefaultValue" type="expression" required="false">
-                    <caption>Default value</caption>
-                    <description />
-                    <returnType assignableTo="databaseAttributeString" />
-                </property>
-                <!-- END DATABASE / STRING -->
             </propertyGroup>
+            <!-- END DATABASE / STRING -->
             <propertyGroup caption="Attribute">
                 <!-- ASSOCIATION -->
                 <property key="attributeAssociation" type="association" selectableObjects="optionsSourceAssociationDataSource" required="true" setLabel="true">
@@ -193,16 +188,6 @@
                     <description />
                 </property>
                 <!-- MISC PROPS -->
-                <property key="filterType" type="enumeration" defaultValue="contains">
-                    <caption>Filter type</caption>
-                    <description />
-                    <enumerationValues>
-                        <enumerationValue key="contains">Contains (fuzzy)</enumerationValue>
-                        <enumerationValue key="containsExact">Contains (exact)</enumerationValue>
-                        <enumerationValue key="startsWith">Starts-with</enumerationValue>
-                        <enumerationValue key="none">None</enumerationValue>
-                    </enumerationValues>
-                </property>
                 <property key="noOptionsText" type="textTemplate" required="false">
                     <caption>No options text</caption>
                     <description />
@@ -301,6 +286,20 @@
             </propertyGroup>
             <propertyGroup caption="Editability">
                 <systemProperty key="Editability" />
+                <property key="customEditability" type="enumeration" defaultValue="default">
+                    <caption>Editable</caption>
+                    <description />
+                    <enumerationValues>
+                        <enumerationValue key="default">Default</enumerationValue>
+                        <enumerationValue key="never">Never</enumerationValue>
+                        <enumerationValue key="conditionally">Conditionally</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="customEditabilityExpression" type="expression" defaultValue="false">
+                    <caption>Condition</caption>
+                    <description />
+                    <returnType type="Boolean" />
+                </property>
                 <property key="readOnlyStyle" type="enumeration" defaultValue="text">
                     <caption>Read-only style</caption>
                     <description>How the combo box will appear in read-only mode.</description>
@@ -333,9 +332,10 @@
         </propertyGroup>
         <propertyGroup caption="Accessibility">
             <propertyGroup caption="Accessibility">
-                <property key="ariaRequired" type="boolean" defaultValue="false">
+                <property key="ariaRequired" type="expression" defaultValue="false">
                     <caption>Aria required</caption>
                     <description />
+                    <returnType type="Boolean" />
                 </property>
             </propertyGroup>
             <propertyGroup caption="Aria labels">
@@ -395,6 +395,28 @@
                     <enumerationValues>
                         <enumerationValue key="spinner">Spinner</enumerationValue>
                         <enumerationValue key="skeleton">Skeleton</enumerationValue>
+                    </enumerationValues>
+                </property>
+            </propertyGroup>
+            <propertyGroup caption="Multiple-selection">
+                <property key="selectedItemsSorting" type="enumeration" defaultValue="none" required="true">
+                    <caption>Selected items sorting</caption>
+                    <description>How selected items should be sorted.</description>
+                    <enumerationValues>
+                        <enumerationValue key="caption">Caption</enumerationValue>
+                        <enumerationValue key="none">Default</enumerationValue>
+                    </enumerationValues>
+                </property>
+            </propertyGroup>
+            <propertyGroup caption="Filter">
+                <property key="filterType" type="enumeration" defaultValue="contains">
+                    <caption>Filter type</caption>
+                    <description />
+                    <enumerationValues>
+                        <enumerationValue key="contains">Contains (fuzzy)</enumerationValue>
+                        <enumerationValue key="containsExact">Contains (exact)</enumerationValue>
+                        <enumerationValue key="startsWith">Starts-with</enumerationValue>
+                        <enumerationValue key="none">None</enumerationValue>
                     </enumerationValues>
                 </property>
             </propertyGroup>

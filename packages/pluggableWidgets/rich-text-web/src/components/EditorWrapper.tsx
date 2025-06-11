@@ -5,8 +5,19 @@ import classNames from "classnames";
 import Quill, { Range } from "quill";
 import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
-import { createElement, CSSProperties, ReactElement, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+    createElement,
+    CSSProperties,
+    ReactElement,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from "react";
 import { RichTextContainerProps } from "typings/RichTextProps";
+import { EditorContext, EditorProvider } from "../store/EditorProvider";
 import { updateLegacyQuillFormats } from "../utils/helpers";
 import MendixTheme from "../utils/themes/mxTheme";
 import { createPreset } from "./CustomToolbars/presets";
@@ -22,7 +33,7 @@ export interface EditorWrapperProps extends RichTextContainerProps {
     toolbarOptions?: Array<string | string[] | { [k: string]: any }>;
 }
 
-export default function EditorWrapper(props: EditorWrapperProps): ReactElement {
+function EditorWrapperInner(props: EditorWrapperProps): ReactElement {
     const {
         id,
         stringAttribute,
@@ -37,14 +48,21 @@ export default function EditorWrapper(props: EditorWrapperProps): ReactElement {
         onLoad,
         readOnlyStyle,
         toolbarOptions,
-        enableStatusBar
+        enableStatusBar,
+        tabIndex
     } = props;
+
+    const globalState = useContext(EditorContext);
+
     const isFirstLoad = useRef<boolean>(false);
     const quillRef = useRef<Quill>(null);
     const [isFocus, setIsFocus] = useState(false);
     const editorValueRef = useRef<string>("");
     const toolbarRef = useRef<HTMLDivElement>(null);
     const [wordCount, setWordCount] = useState(0);
+
+    const { isFullscreen } = globalState;
+
     const [setAttributeValueDebounce] = useMemo(
         () =>
             debounce(string => {
@@ -55,8 +73,9 @@ export default function EditorWrapper(props: EditorWrapperProps): ReactElement {
                     }
                 }
             }, 200),
-        [stringAttribute]
+        [stringAttribute, onChange, onChangeType]
     );
+
     const calculateWordCount = useCallback(
         (quill: Quill | null): void => {
             if (enableStatusBar) {
@@ -89,7 +108,9 @@ export default function EditorWrapper(props: EditorWrapperProps): ReactElement {
     }, [quillRef.current]);
 
     const onTextChange = useCallback(() => {
-        setAttributeValueDebounce(quillRef?.current?.getSemanticHTML());
+        if (stringAttribute.value !== quillRef?.current?.getSemanticHTML()) {
+            setAttributeValueDebounce(quillRef?.current?.getSemanticHTML());
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [quillRef.current, stringAttribute]);
 
@@ -100,7 +121,6 @@ export default function EditorWrapper(props: EditorWrapperProps): ReactElement {
                 if (!isFocus) {
                     setIsFocus(true);
                     executeAction(onFocus);
-
                     editorValueRef.current = quillRef.current?.getText() || "";
                 }
             } else {
@@ -116,41 +136,46 @@ export default function EditorWrapper(props: EditorWrapperProps): ReactElement {
                     }
                 }
             }
-            (quillRef.current?.theme as MendixTheme).updateFontPicker(range);
+            (quillRef.current?.theme as MendixTheme).updatePicker(range);
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
         [isFocus, onFocus, onBlur, onChange, onChangeType]
     );
 
     const toolbarId = `widget_${id.replaceAll(".", "_")}_toolbar`;
     const shouldHideToolbar = (stringAttribute.readOnly && readOnlyStyle !== "text") || toolbarLocation === "hide";
     const toolbarPreset = shouldHideToolbar ? [] : createPreset(props);
+
     return (
         <div
             className={classNames(
                 className,
                 "flex-column",
-                `${stringAttribute?.readOnly ? `editor-${readOnlyStyle}` : ""}`
+                `${stringAttribute?.readOnly ? `editor-${readOnlyStyle}` : ""}`,
+                { fullscreen: isFullscreen }
             )}
-            style={{
-                maxWidth: style?.maxWidth
-            }}
+            style={{ width: style?.width }}
             onClick={e => {
                 // click on other parts of editor, such as the toolbar, should also set focus
-                if (
-                    toolbarRef.current === (e.target as HTMLDivElement) ||
-                    toolbarRef.current?.contains(e.target as Node)
-                ) {
-                    quillRef?.current?.focus();
+                if (!quillRef?.current?.hasFocus()) {
+                    if (
+                        toolbarRef.current === (e.target as HTMLDivElement) ||
+                        toolbarRef.current?.contains(e.target as Node) ||
+                        e.target === quillRef?.current?.container.parentElement
+                    ) {
+                        quillRef?.current?.focus();
+                    }
                 }
             }}
             spellCheck={props.spellCheck}
+            tabIndex={tabIndex}
         >
             {toolbarLocation === "auto" && <StickySentinel />}
             <div
                 className={classNames(
                     "flexcontainer",
-                    toolbarLocation === "bottom" ? "flex-column-reverse" : "flex-column"
+                    toolbarLocation === "bottom" ? "flex-column-reverse" : "flex-column",
+                    { "hide-toolbar": shouldHideToolbar }
                 )}
             >
                 <If condition={!shouldHideToolbar && toolbarOptions === undefined}>
@@ -160,30 +185,45 @@ export default function EditorWrapper(props: EditorWrapperProps): ReactElement {
                         preset={preset}
                         quill={quillRef.current}
                         toolbarContent={toolbarPreset}
+                        customFonts={props.customFonts}
                     />
                 </If>
                 <Editor
                     theme={"snow"}
                     ref={quillRef}
                     defaultValue={stringAttribute.value}
-                    style={{
-                        height: style?.height,
-                        minHeight: style?.minHeight,
-                        maxHeight: style?.maxHeight
-                    }}
+                    style={
+                        isFullscreen
+                            ? { height: "100%" }
+                            : {
+                                  height: style?.height,
+                                  minHeight: style?.minHeight,
+                                  maxHeight: style?.maxHeight,
+                                  overflowY: style?.overflowY
+                              }
+                    }
                     toolbarId={shouldHideToolbar ? undefined : toolbarOptions ? toolbarOptions : toolbarId}
                     onTextChange={onTextChange}
                     onSelectionChange={onSelectionChange}
                     className={"widget-rich-text-container"}
                     readOnly={stringAttribute.readOnly}
                     key={`${toolbarId}_${stringAttribute.readOnly}`}
+                    customFonts={props.customFonts}
                 />
             </div>
             {enableStatusBar && (
-                <div className="widget-rich-text-footer">
-                    {wordCount} word{wordCount > 1 ? "s" : ""}
+                <div className="widget-rich-text-footer" tabIndex={-1}>
+                    {wordCount} word{wordCount === 1 ? "" : "s"}
                 </div>
             )}
         </div>
+    );
+}
+
+export default function EditorWrapper(props: EditorWrapperProps): ReactElement {
+    return (
+        <EditorProvider>
+            <EditorWrapperInner {...props} />
+        </EditorProvider>
     );
 }

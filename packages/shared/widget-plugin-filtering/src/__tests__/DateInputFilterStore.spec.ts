@@ -1,22 +1,22 @@
 jest.mock("mendix/filters/builders");
-import { configure } from "mobx";
+import { attrId, listAttr } from "@mendix/widget-plugin-test-utils";
+import { ListAttributeValue } from "mendix";
 import {
-    literal,
+    and,
     attribute,
-    equals,
-    notEqual,
     dayEquals,
-    dayNotEqual,
     dayGreaterThan,
     dayGreaterThanOrEqual,
     dayLessThan,
     dayLessThanOrEqual,
-    or,
-    and
+    dayNotEqual,
+    equals,
+    literal,
+    notEqual,
+    or
 } from "mendix/filters/builders";
-import { ListAttributeValue } from "mendix";
-import { listAttr, attrId } from "@mendix/widget-plugin-test-utils";
-import { DateInputFilterStore } from "../stores/DateInputFilterStore";
+import { configure } from "mobx";
+import { DateInputFilterStore } from "../stores/input/DateInputFilterStore";
 
 configure({
     enforceActions: "never"
@@ -117,8 +117,8 @@ describe("DateInputFilterStore", () => {
             attr.id = attrId("attr_009");
             expect(store.condition).toEqual(
                 and(
-                    dayGreaterThanOrEqual(attribute(attr.id), literal(new Date("2024-09-17T00:00:00.000Z"))),
-                    dayLessThan(attribute(attr.id), literal(new Date("2024-10-01T00:00:00.000Z"))),
+                    dayGreaterThanOrEqual(attribute(attr.id), literal(new Date("2024-09-17T15:59:13.000Z"))),
+                    dayLessThan(attribute(attr.id), literal(new Date("2024-10-01T11:12:13.000Z"))),
                     equals(literal("__RANGE_MARKER__"), literal("__RANGE_MARKER__"))
                 )
             );

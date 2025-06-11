@@ -1,13 +1,16 @@
 import "@testing-library/jest-dom";
-import { listAction, listExp } from "@mendix/widget-plugin-test-utils";
+import { listAction, listExp, setupIntersectionObserverStub } from "@mendix/widget-plugin-test-utils";
 import { waitFor, render } from "@testing-library/react";
 import { createElement } from "react";
 import { Gallery } from "../Gallery";
 import { ItemHelperBuilder } from "../../utils/builders/ItemHelperBuilder";
 import { mockProps, mockItemHelperWithAction, setup } from "../../utils/test-utils";
-import "./__mocks__/intersectionObserverMock";
+import { ObjectItem } from "mendix";
 
 describe("Gallery", () => {
+    beforeAll(() => {
+        setupIntersectionObserverStub();
+    });
     describe("DOM Structure", () => {
         it("renders correctly", () => {
             const { asFragment } = render(<Gallery {...mockProps()} />);
@@ -133,11 +136,26 @@ describe("Gallery", () => {
     });
 
     describe("with accessibility properties", () => {
-        it("renders correctly", () => {
+        it("renders correctly without items", () => {
             const { asFragment } = render(
                 <Gallery
                     {...mockProps()}
                     items={[]}
+                    headerTitle="filter title"
+                    emptyMessageTitle="empty message"
+                    emptyPlaceholderRenderer={renderWrapper => renderWrapper(<span>No items found</span>)}
+                />
+            );
+
+            expect(asFragment()).toMatchSnapshot();
+        });
+
+        it("renders correctly with items", () => {
+            const { asFragment } = render(
+                <Gallery
+                    {...mockProps()}
+                    items={[{ id: "1" } as ObjectItem, { id: "2" } as ObjectItem, { id: "3" } as ObjectItem]}
+                    ariaLabelItem={(item: ObjectItem) => `title for '${item.id}'`}
                     headerTitle="filter title"
                     emptyMessageTitle="empty message"
                     emptyPlaceholderRenderer={renderWrapper => renderWrapper(<span>No items found</span>)}

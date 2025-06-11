@@ -1,5 +1,5 @@
-import { createElement } from "react";
-import { create } from "react-test-renderer";
+import { createElement, ReactElement } from "react";
+import { render } from "@testing-library/react";
 
 import { Dailymotion, DailymotionProps } from "../Dailymotion";
 
@@ -12,29 +12,30 @@ describe("Dailymotion Player", () => {
         aspectRatio: false
     };
 
-    const defaulPlayer = (props: DailymotionProps): JSX.Element => <Dailymotion {...props} />;
+    const defaulPlayer = (props: DailymotionProps): ReactElement => <Dailymotion {...props} />;
 
-    it("should renders correctly", () => {
-        const player = create(defaulPlayer(defaultProps)).toJSON();
-
-        expect(player).toMatchSnapshot();
+    it("should render correctly", () => {
+        const { asFragment } = render(defaulPlayer(defaultProps));
+        expect(asFragment()).toMatchSnapshot();
     });
 
-    it("should renders correctly with autoplay", () => {
-        const player = create(defaulPlayer({ ...defaultProps, autoPlay: true })).toJSON();
-
-        expect(player).toMatchSnapshot();
+    it("should render correctly with autoplay", () => {
+        const { asFragment } = render(defaulPlayer({ ...defaultProps, autoPlay: true }));
+        expect(asFragment()).toMatchSnapshot();
     });
 
-    it("should renders correctly with muted", () => {
-        const player = create(defaulPlayer({ ...defaultProps, muted: true })).toJSON();
-
-        expect(player).toMatchSnapshot();
+    it("should render correctly with muted", () => {
+        const { asFragment } = render(defaulPlayer({ ...defaultProps, muted: true }));
+        expect(asFragment()).toMatchSnapshot();
     });
 
-    it("should renders correctly with controls", () => {
-        const player = create(defaulPlayer({ ...defaultProps, showControls: true })).toJSON();
+    it("should render correctly with controls", () => {
+        const { asFragment } = render(defaulPlayer({ ...defaultProps, showControls: true }));
+        expect(asFragment()).toMatchSnapshot();
+    });
 
-        expect(player).toMatchSnapshot();
+    it("should render correctly with title", () => {
+        const { asFragment } = render(defaulPlayer({ ...defaultProps, title: "Sample Video Title" }));
+        expect(asFragment()).toMatchSnapshot();
     });
 });

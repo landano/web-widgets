@@ -1,4 +1,4 @@
-import { Component, createElement } from "react";
+import { Component, createElement, ReactElement, ReactNode } from "react";
 
 import { Dailymotion } from "./Dailymotion";
 import { Html5 } from "./Html5";
@@ -16,6 +16,8 @@ export interface VideoPlayerProps {
     muted: boolean;
     aspectRatio: boolean;
 
+    title?: string;
+
     preview: boolean;
 }
 
@@ -25,7 +27,7 @@ export class Video extends Component<VideoPlayerProps> {
     private readonly handleVimeoPlayerRender = this.renderVimeoPlayer.bind(this);
     private readonly handleDailymotionPlayerRender = this.renderDailymotionPlayer.bind(this);
 
-    render(): JSX.Element {
+    render(): ReactNode {
         const url = this.props.url || "";
         if (Youtube.canPlay(url)) {
             return this.handleYoutubePlayerRender(url);
@@ -37,7 +39,7 @@ export class Video extends Component<VideoPlayerProps> {
         return this.handleHtml5PlayerRender(url);
     }
 
-    private renderHtml5Player(url: string): JSX.Element {
+    private renderHtml5Player(url: string): ReactElement {
         return (
             <Html5
                 showControls={this.props.showControls}
@@ -48,11 +50,12 @@ export class Video extends Component<VideoPlayerProps> {
                 url={url}
                 aspectRatio={this.props.aspectRatio}
                 preview={this.props.preview}
+                title={this.props.title}
             />
         );
     }
 
-    private renderYoutubePlayer(url: string): JSX.Element {
+    private renderYoutubePlayer(url: string): ReactElement {
         return (
             <Youtube
                 url={url}
@@ -61,11 +64,12 @@ export class Video extends Component<VideoPlayerProps> {
                 muted={this.props.muted}
                 loop={this.props.loop}
                 aspectRatio={this.props.aspectRatio}
+                title={this.props.title}
             />
         );
     }
 
-    private renderVimeoPlayer(url: string): JSX.Element {
+    private renderVimeoPlayer(url: string): ReactElement | null {
         return (
             <Vimeo
                 url={url}
@@ -73,11 +77,12 @@ export class Video extends Component<VideoPlayerProps> {
                 muted={this.props.muted}
                 loop={this.props.loop}
                 aspectRatio={this.props.aspectRatio}
+                title={this.props.title}
             />
         );
     }
 
-    private renderDailymotionPlayer(url: string): JSX.Element {
+    private renderDailymotionPlayer(url: string): ReactElement | null {
         return (
             <Dailymotion
                 url={url}
@@ -85,6 +90,7 @@ export class Video extends Component<VideoPlayerProps> {
                 muted={this.props.muted}
                 showControls={this.props.showControls}
                 aspectRatio={this.props.aspectRatio}
+                title={this.props.title}
             />
         );
     }

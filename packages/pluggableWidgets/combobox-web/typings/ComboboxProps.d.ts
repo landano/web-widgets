@@ -21,8 +21,6 @@ export interface OptionsSourceStaticDataSourceType {
     staticDataSourceCaption: DynamicValue<string>;
 }
 
-export type FilterTypeEnum = "contains" | "containsExact" | "startsWith" | "none";
-
 export type OptionsSourceAssociationCustomContentTypeEnum = "yes" | "listItem" | "no";
 
 export type OptionsSourceDatabaseCustomContentTypeEnum = "yes" | "listItem" | "no";
@@ -33,9 +31,15 @@ export type SelectionMethodEnum = "checkbox" | "rowclick";
 
 export type SelectedItemsStyleEnum = "text" | "boxes";
 
+export type CustomEditabilityEnum = "default" | "never" | "conditionally";
+
 export type ReadOnlyStyleEnum = "bordered" | "text";
 
 export type LoadingTypeEnum = "spinner" | "skeleton";
+
+export type SelectedItemsSortingEnum = "caption" | "none";
+
+export type FilterTypeEnum = "contains" | "containsExact" | "startsWith" | "none";
 
 export interface OptionsSourceStaticDataSourcePreviewType {
     staticDataSourceValue: string;
@@ -61,13 +65,11 @@ export interface ComboboxContainerProps {
     optionsSourceDatabaseCaptionExpression?: ListExpressionValue<string>;
     optionsSourceDatabaseValueAttribute?: ListAttributeValue<string | Big>;
     databaseAttributeString?: EditableValue<string | Big>;
-    optionsSourceDatabaseDefaultValue?: DynamicValue<string | Big>;
     attributeAssociation: ReferenceValue | ReferenceSetValue;
     optionsSourceAssociationDataSource?: ListValue;
     staticAttribute: EditableValue<string | Big | boolean | Date>;
     optionsSourceStaticDataSource: OptionsSourceStaticDataSourceType[];
     emptyOptionText?: DynamicValue<string>;
-    filterType: FilterTypeEnum;
     noOptionsText?: DynamicValue<string>;
     clearable: boolean;
     optionsSourceAssociationCustomContentType: OptionsSourceAssociationCustomContentTypeEnum;
@@ -81,11 +83,13 @@ export interface ComboboxContainerProps {
     selectedItemsStyle: SelectedItemsStyleEnum;
     selectAllButton: boolean;
     selectAllButtonCaption: DynamicValue<string>;
+    customEditability: CustomEditabilityEnum;
+    customEditabilityExpression: DynamicValue<boolean>;
     readOnlyStyle: ReadOnlyStyleEnum;
     onChangeEvent?: ActionValue;
     onEnterEvent?: ActionValue;
     onLeaveEvent?: ActionValue;
-    ariaRequired: boolean;
+    ariaRequired: DynamicValue<boolean>;
     clearButtonAriaLabel?: DynamicValue<string>;
     removeValueAriaLabel?: DynamicValue<string>;
     a11ySelectedValue?: DynamicValue<string>;
@@ -93,11 +97,14 @@ export interface ComboboxContainerProps {
     a11yInstructions?: DynamicValue<string>;
     lazyLoading: boolean;
     loadingType: LoadingTypeEnum;
+    selectedItemsSorting: SelectedItemsSortingEnum;
+    filterType: FilterTypeEnum;
 }
 
 export interface ComboboxPreviewProps {
     readOnly: boolean;
-    renderMode?: "design" | "xray" | "structure";
+    renderMode: "design" | "xray" | "structure";
+    translate: (text: string) => string;
     source: SourceEnum;
     optionsSourceType: OptionsSourceTypeEnum;
     attributeEnumeration: string;
@@ -112,13 +119,11 @@ export interface ComboboxPreviewProps {
     optionsSourceDatabaseCaptionExpression: string;
     optionsSourceDatabaseValueAttribute: string;
     databaseAttributeString: string;
-    optionsSourceDatabaseDefaultValue: string;
     attributeAssociation: string;
     optionsSourceAssociationDataSource: {} | { caption: string } | { type: string } | null;
     staticAttribute: string;
     optionsSourceStaticDataSource: OptionsSourceStaticDataSourcePreviewType[];
     emptyOptionText: string;
-    filterType: FilterTypeEnum;
     noOptionsText: string;
     clearable: boolean;
     optionsSourceAssociationCustomContentType: OptionsSourceAssociationCustomContentTypeEnum;
@@ -132,12 +137,14 @@ export interface ComboboxPreviewProps {
     selectedItemsStyle: SelectedItemsStyleEnum;
     selectAllButton: boolean;
     selectAllButtonCaption: string;
+    customEditability: CustomEditabilityEnum;
+    customEditabilityExpression: string;
     readOnlyStyle: ReadOnlyStyleEnum;
     onChangeEvent: {} | null;
     onChangeDatabaseEvent: {} | null;
     onEnterEvent: {} | null;
     onLeaveEvent: {} | null;
-    ariaRequired: boolean;
+    ariaRequired: string;
     clearButtonAriaLabel: string;
     removeValueAriaLabel: string;
     a11ySelectedValue: string;
@@ -145,4 +152,6 @@ export interface ComboboxPreviewProps {
     a11yInstructions: string;
     lazyLoading: boolean;
     loadingType: LoadingTypeEnum;
+    selectedItemsSorting: SelectedItemsSortingEnum;
+    filterType: FilterTypeEnum;
 }

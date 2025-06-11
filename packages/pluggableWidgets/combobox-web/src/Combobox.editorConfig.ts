@@ -19,7 +19,6 @@ const DATABASE_SOURCE_CONFIG: Array<keyof ComboboxPreviewProps> = [
     "optionsSourceDatabaseCustomContent",
     "optionsSourceDatabaseCustomContentType",
     "optionsSourceDatabaseDataSource",
-    "optionsSourceDatabaseDefaultValue",
     "optionsSourceDatabaseValueAttribute",
     "optionsSourceDatabaseItemSelection",
     "databaseAttributeString",
@@ -36,7 +35,14 @@ const ASSOCIATION_SOURCE_CONFIG: Array<keyof ComboboxPreviewProps> = [
     "attributeAssociation"
 ];
 
-export function getProperties(values: ComboboxPreviewProps, defaultProperties: Properties): Properties {
+export function getProperties(
+    values: ComboboxPreviewProps & { Editability?: unknown },
+    defaultProperties: Properties
+): Properties {
+    if (values.source !== "database") {
+        hidePropertiesIn(defaultProperties, values, ["customEditability", "customEditabilityExpression"]);
+    }
+
     if (values.source === "context") {
         hidePropertiesIn(defaultProperties, values, [
             "staticAttribute",
@@ -50,6 +56,7 @@ export function getProperties(values: ComboboxPreviewProps, defaultProperties: P
                 "selectionMethod",
                 "selectAllButton",
                 "selectAllButtonCaption",
+                "selectedItemsSorting",
                 ...ASSOCIATION_SOURCE_CONFIG,
                 ...LAZY_LOADING_CONFIG
             ]);
@@ -122,15 +129,19 @@ export function getProperties(values: ComboboxPreviewProps, defaultProperties: P
         if (values.optionsSourceDatabaseItemSelection === "Multi") {
             hidePropertiesIn(defaultProperties, values, [
                 "optionsSourceDatabaseValueAttribute",
-                "databaseAttributeString",
-                "optionsSourceDatabaseDefaultValue"
+                "databaseAttributeString"
             ]);
+        } else {
+            hidePropertiesIn(defaultProperties, values, ["selectedItemsSorting"]);
         }
         if (values.databaseAttributeString.length === 0) {
-            hidePropertiesIn(defaultProperties, values, [
-                "optionsSourceDatabaseValueAttribute",
-                "optionsSourceDatabaseDefaultValue"
-            ]);
+            hidePropertiesIn(defaultProperties, values, ["optionsSourceDatabaseValueAttribute"]);
+            hidePropertiesIn(defaultProperties, values, ["Editability"]);
+            if (values.customEditability !== "conditionally") {
+                hidePropertiesIn(defaultProperties, values, ["customEditabilityExpression"]);
+            }
+        } else {
+            hidePropertiesIn(defaultProperties, values, ["customEditability", "customEditabilityExpression"]);
         }
     } else if (values.source === "static") {
         hidePropertiesIn(defaultProperties, values, [
@@ -189,7 +200,7 @@ export function getPreview(_values: ComboboxPreviewProps, isDarkMode: boolean): 
     const palette = structurePreviewPalette[isDarkMode ? "dark" : "light"];
     const structurePreviewChildren: StructurePreviewProps[] = [];
     let dropdownPreviewChildren: StructurePreviewProps[] = [];
-
+    let readOnly = _values.readOnly;
     if (
         _values.source === "context" &&
         _values.optionsSourceType === "association" &&
@@ -202,13 +213,19 @@ export function getPreview(_values: ComboboxPreviewProps, isDarkMode: boolean): 
             )(_values.optionsSourceAssociationCustomContent)
         );
     }
-    if (_values.source === "database" && _values.optionsSourceDatabaseCustomContentType !== "no") {
-        structurePreviewChildren.push(
-            dropzone(
-                dropzone.placeholder("Configure the combo box: Place widgets here"),
-                dropzone.hideDataSourceHeaderIf(false)
-            )(_values.optionsSourceDatabaseCustomContent)
-        );
+    if (_values.source === "database") {
+        if (_values.optionsSourceDatabaseCustomContentType !== "no") {
+            structurePreviewChildren.push(
+                dropzone(
+                    dropzone.placeholder("Configure the combo box: Place widgets here"),
+                    dropzone.hideDataSourceHeaderIf(false)
+                )(_values.optionsSourceDatabaseCustomContent)
+            );
+        }
+
+        if (_values.databaseAttributeString.length === 0) {
+            readOnly = _values.customEditability === "never";
+        }
     }
     if (_values.source === "static" && _values.staticDataSourceCustomContentType !== "no") {
         structurePreviewChildren.push(
@@ -267,7 +284,7 @@ export function getPreview(_values: ComboboxPreviewProps, isDarkMode: boolean): 
                 borders: true,
                 borderWidth: 1,
                 borderRadius: 2,
-                backgroundColor: _values.readOnly ? palette.background.containerDisabled : palette.background.container,
+                backgroundColor: readOnly ? palette.background.containerDisabled : palette.background.container,
                 children: [
                     {
                         type: "Container",
@@ -275,7 +292,7 @@ export function getPreview(_values: ComboboxPreviewProps, isDarkMode: boolean): 
                         padding: 4,
                         children: structurePreviewChildren
                     },
-                    _values.readOnly && _values.readOnlyStyle === "text"
+                    readOnly && _values.readOnlyStyle === "text"
                         ? container({ grow: 0, padding: 4 })()
                         : {
                               ...getIconPreview(isDarkMode),

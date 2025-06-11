@@ -1,10 +1,4 @@
-import {
-    ChartWidget,
-    ChartWidgetProps,
-    getPlotChartDataTransforms,
-    traceEqual,
-    usePlotChartDataSeries
-} from "@mendix/shared-charts/main";
+import { ChartWidget, ChartWidgetProps, traceEqual, usePlotChartDataSeries } from "@mendix/shared-charts/main";
 import "@mendix/shared-charts/ui/Chart.scss";
 import { defaultEqual, flatEqual } from "@mendix/widget-plugin-platform/utils/flatEqual";
 import Big from "big.js";
@@ -34,7 +28,7 @@ const bubbleChartSeriesOptions: ChartWidgetProps["seriesOptions"] = {};
 
 export const BubbleChart = memo(
     // disable eslint rule to have nice component name in component tree at devtools
-    // eslint-disable-next-line prefer-arrow-callback
+
     function BubbleChart(props: BubbleChartContainerProps): ReactElement {
         const getSizes = (line: LinesType): number[] => {
             const sizes: number[] = [];
@@ -75,6 +69,7 @@ export const BubbleChart = memo(
                 );
                 const markerColorExpression =
                     line.dataSet === "static" ? line.staticMarkerColor : line.dynamicMarkerColor;
+
                 return {
                     type: "scatter",
                     mode: "markers",
@@ -85,8 +80,7 @@ export const BubbleChart = memo(
                         symbol: ["circle"],
                         size,
                         ...markerOptions
-                    },
-                    transforms: getPlotChartDataTransforms(line.aggregationType, dataPoints)
+                    }
                 };
             }, [])
         );

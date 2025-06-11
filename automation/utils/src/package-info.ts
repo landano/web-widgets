@@ -25,6 +25,7 @@ export interface PackageJsonFileContent {
         minimumMXVersion: string;
         appName?: string;
         appNumber?: number;
+        reactReady?: boolean;
     };
 
     testProject?: {
@@ -52,6 +53,7 @@ export const MxPackageTypeSchema = z.enum([MODULE, WIDGET, JSACTIONS]);
 export const MxPackageSchema = z.object({
     name: MxPackageNameSchema,
     type: MxPackageTypeSchema,
+    changelogType: z.enum([MODULE, WIDGET]).optional(),
     mpkName: z.string().endsWith(".mpk"),
     dependencies: z.string().array().optional().default([])
 });
@@ -59,7 +61,8 @@ export const MxPackageSchema = z.object({
 export const MarketplaceSchema = z.object({
     minimumMXVersion: versionSchema,
     appName: appNameSchema,
-    appNumber: appNumberSchema.or(z.literal(-1))
+    appNumber: appNumberSchema.or(z.literal(-1)),
+    reactReady: z.boolean().optional().default(false)
 });
 
 export const TestProjectSchema = z.object({

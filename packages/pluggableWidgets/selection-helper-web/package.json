@@ -1,45 +1,45 @@
 {
     "name": "@mendix/selection-helper-web",
     "widgetName": "SelectionHelper",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "",
-    "copyright": "© Mendix Technology BV 2023. All rights reserved.",
+    "copyright": "© Mendix Technology BV 2025. All rights reserved.",
     "license": "Apache-2.0",
     "private": true,
-    "config": {},
     "repository": {
         "type": "git",
         "url": "https://github.com/mendix/web-widgets.git"
     },
+    "config": {},
     "mxpackage": {
         "name": "SelectionHelper",
         "type": "widget",
         "mpkName": "com.mendix.widget.web.SelectionHelper.mpk"
     },
+    "packagePath": "com.mendix.widget.web",
     "marketplace": {
         "minimumMXVersion": "9.24.0.2965",
         "appName": "SelectionHelper"
     },
     "testProject": {
         "githubUrl": "https://github.com/mendix/testProjects",
-        "branchName": "gallery-web"
+        "branchName": "gallery-web/main"
     },
-    "packagePath": "com.mendix.widget.web",
     "scripts": {
-        "start": "pluggable-widgets-tools start:server",
-        "dev": "pluggable-widgets-tools start:web",
         "build": "pluggable-widgets-tools build:web",
-        "format": "prettier --write .",
-        "lint": "eslint --ext .jsx,.js,.ts,.tsx src/",
+        "create-translation": "rui-create-translation",
+        "dev": "pluggable-widgets-tools start:web",
+        "format": "prettier --ignore-path ./node_modules/@mendix/prettier-config-web-widgets/global-prettierignore --write .",
+        "lint": "eslint src/ package.json",
         "release": "pluggable-widgets-tools release:ts",
-        "verify": "rui-verify-package-format",
+        "start": "pluggable-widgets-tools start:server",
         "update-changelog": "rui-update-changelog-widget",
-        "create-translation": "rui-create-translation"
+        "verify": "rui-verify-package-format"
     },
     "devDependencies": {
         "@mendix/automation-utils": "workspace:*",
         "@mendix/eslint-config-web-widgets": "workspace:*",
-        "@mendix/pluggable-widgets-tools": "10.16.0",
+        "@mendix/pluggable-widgets-tools": "*",
         "@mendix/prettier-config-web-widgets": "workspace:*",
         "@mendix/widget-plugin-component-kit": "workspace:*",
         "@mendix/widget-plugin-grid": "workspace:*",

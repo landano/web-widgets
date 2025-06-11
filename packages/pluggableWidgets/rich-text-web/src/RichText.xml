@@ -64,10 +64,10 @@
             <propertyGroup caption="Dimensions">
                 <property key="widthUnit" type="enumeration" defaultValue="percentage">
                     <caption>Width unit</caption>
-                    <description>Percentage: portion of parent size. Pixels: absolute amount of pixels.</description>
+                    <description />
                     <enumerationValues>
-                        <enumerationValue key="percentage">Percentage</enumerationValue>
                         <enumerationValue key="pixels">Pixels</enumerationValue>
+                        <enumerationValue key="percentage">Percentage</enumerationValue>
                     </enumerationValues>
                 </property>
                 <property key="width" type="integer" defaultValue="100">
@@ -78,18 +78,52 @@
                     <caption>Height unit</caption>
                     <description />
                     <enumerationValues>
-                        <enumerationValue key="percentageOfWidth">Percentage of width</enumerationValue>
+                        <enumerationValue key="percentageOfWidth">Auto</enumerationValue>
                         <enumerationValue key="pixels">Pixels</enumerationValue>
-                        <enumerationValue key="percentageOfParent">Percentage of parent</enumerationValue>
+                        <enumerationValue key="percentageOfParent">Percentage</enumerationValue>
+                        <enumerationValue key="percentageOfView">Viewport</enumerationValue>
                     </enumerationValues>
                 </property>
                 <property key="height" type="integer" defaultValue="250">
                     <caption>Height</caption>
                     <description />
                 </property>
+                <property key="minHeightUnit" type="enumeration" defaultValue="pixels">
+                    <caption>Minimum Height unit</caption>
+                    <description />
+                    <enumerationValues>
+                        <enumerationValue key="none">None</enumerationValue>
+                        <enumerationValue key="pixels">Pixels</enumerationValue>
+                        <enumerationValue key="percentageOfParent">Percentage</enumerationValue>
+                        <enumerationValue key="percentageOfView">Viewport</enumerationValue>
+                    </enumerationValues>
+                </property>
                 <property key="minHeight" type="integer" defaultValue="250">
                     <caption>Minimum height</caption>
-                    <description>Editor's minimum height. The number value is in pixels.</description>
+                    <description />
+                </property>
+                <property key="maxHeightUnit" type="enumeration" defaultValue="none">
+                    <caption>Maximum Height unit</caption>
+                    <description />
+                    <enumerationValues>
+                        <enumerationValue key="none">None</enumerationValue>
+                        <enumerationValue key="pixels">Pixels</enumerationValue>
+                        <enumerationValue key="percentageOfParent">Percentage</enumerationValue>
+                        <enumerationValue key="percentageOfView">Viewport</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="maxHeight" type="integer" defaultValue="250">
+                    <caption>Maximum height</caption>
+                    <description />
+                </property>
+                <property key="OverflowY" type="enumeration" defaultValue="auto">
+                    <caption>Vertical Overflow</caption>
+                    <description />
+                    <enumerationValues>
+                        <enumerationValue key="auto">Auto</enumerationValue>
+                        <enumerationValue key="scroll">Scroll</enumerationValue>
+                        <enumerationValue key="hidden">Hidden</enumerationValue>
+                    </enumerationValues>
                 </property>
             </propertyGroup>
         </propertyGroup>
@@ -128,6 +162,22 @@
                 <property key="spellCheck" type="boolean" defaultValue="false">
                     <caption>Enable spell checking</caption>
                     <description />
+                </property>
+                <property key="customFonts" type="object" isList="true" required="false">
+                    <caption>Custom fonts</caption>
+                    <description />
+                    <properties>
+                        <property key="fontName" type="string" required="false">
+                            <caption>Font name</caption>
+                            <category>Item</category>
+                            <description>A title for this font combination (e.g., Arial).</description>
+                        </property>
+                        <property key="fontStyle" type="string" required="false">
+                            <caption>Font style</caption>
+                            <category>Item</category>
+                            <description>The full CSS font-family declaration that will be applied (e.g., arial, helvetica, sans-serif).</description>
+                        </property>
+                    </properties>
                 </property>
             </propertyGroup>
         </propertyGroup>
@@ -181,8 +231,16 @@
                     <caption>Content type</caption>
                     <description />
                 </property>
+                <property key="view" type="boolean" defaultValue="true">
+                    <caption>View</caption>
+                    <description />
+                </property>
                 <property key="remove" type="boolean" defaultValue="true">
                     <caption>Removal</caption>
+                    <description />
+                </property>
+                <property key="tableBetter" type="boolean" defaultValue="true">
+                    <caption>Table</caption>
                     <description />
                 </property>
                 <property key="advancedConfig" type="object" isList="true" required="false">
@@ -215,16 +273,20 @@
                                 <enumerationValue key="video">Video</enumerationValue>
                                 <enumerationValue key="formula">Formula</enumerationValue>
                                 <enumerationValue key="blockquote">Blockquote</enumerationValue>
+                                <enumerationValue key="code">Code</enumerationValue>
                                 <enumerationValue key="codeBlock">Code Block</enumerationValue>
                                 <enumerationValue key="viewCode">View Code</enumerationValue>
                                 <enumerationValue key="align">Left Align</enumerationValue>
                                 <enumerationValue key="centerAlign">Center Align</enumerationValue>
                                 <enumerationValue key="rightAlign">Right Align</enumerationValue>
-                                <enumerationValue key="font">Font</enumerationValue>
+                                <enumerationValue key="font">Font Type</enumerationValue>
+                                <enumerationValue key="size">Font Size</enumerationValue>
                                 <enumerationValue key="color">Color</enumerationValue>
                                 <enumerationValue key="background">Background</enumerationValue>
                                 <enumerationValue key="header">Header</enumerationValue>
+                                <enumerationValue key="fullscreen">Full screen</enumerationValue>
                                 <enumerationValue key="clean">Clean</enumerationValue>
+                                <enumerationValue key="tableBetter">Table</enumerationValue>
                             </enumerationValues>
                         </property>
                     </properties>

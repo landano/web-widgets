@@ -24,6 +24,7 @@ export interface VideoPlayerContainerProps {
     posterExpression?: DynamicValue<string>;
     videoUrl?: DynamicValue<string>;
     posterUrl?: DynamicValue<string>;
+    iframeTitle?: DynamicValue<string>;
     autoStart: boolean;
     showControls: boolean;
     muted: boolean;
@@ -44,12 +45,14 @@ export interface VideoPlayerPreviewProps {
     style: string;
     styleObject?: CSSProperties;
     readOnly: boolean;
-    renderMode?: "design" | "xray" | "structure";
+    renderMode: "design" | "xray" | "structure";
+    translate: (text: string) => string;
     type: TypeEnum;
     urlExpression: string;
     posterExpression: string;
     videoUrl: string;
     posterUrl: string;
+    iframeTitle: string;
     autoStart: boolean;
     showControls: boolean;
     muted: boolean;

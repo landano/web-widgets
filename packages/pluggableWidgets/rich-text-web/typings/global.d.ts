@@ -1,4 +1,3 @@
-
 export interface MXGlobalObject {
     remoteUrl: string;
 }
@@ -8,3 +7,5 @@ declare global {
         mx: MXGlobalObject;
     }
 }
+
+declare module "lodash.merge";

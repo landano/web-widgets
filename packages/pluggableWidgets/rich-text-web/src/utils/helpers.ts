@@ -3,19 +3,33 @@ import Quill from "quill";
 import { Delta, Op } from "quill/core";
 import { RichTextContainerProps } from "typings/RichTextProps";
 
-export function constructWrapperStyle(props: RichTextContainerProps, currentStyle: CSSProperties): CSSProperties {
-    const { width, height } = currentStyle;
-    const { minHeight, heightUnit, widthUnit } = props;
+export const ACTION_DISPATCHER = "ACTION_DISPATCHER";
 
-    const wrapperStyle: Pick<CSSProperties, "width" | "height" | "minHeight" | "maxWidth"> = { width, height };
+function getHeightScale(height: number, heightUnit: "pixels" | "percentageOfParent" | "percentageOfView"): string {
+    return `${height}${heightUnit === "pixels" ? "px" : heightUnit === "percentageOfView" ? "vh" : "%"}`;
+}
 
-    if (heightUnit !== "pixels") {
-        wrapperStyle.minHeight = minHeight;
-        delete wrapperStyle.height;
-    }
+export function constructWrapperStyle(props: RichTextContainerProps): CSSProperties {
+    const { widthUnit, heightUnit, minHeightUnit, maxHeightUnit, width, height, minHeight, maxHeight, OverflowY } =
+        props;
 
-    if (widthUnit === "pixels") {
-        wrapperStyle.maxWidth = width;
+    const wrapperStyle: Pick<CSSProperties, "width" | "height" | "minHeight" | "maxHeight" | "maxWidth" | "overflowY"> =
+        {};
+
+    wrapperStyle.width = `${width}${widthUnit === "pixels" ? "px" : "%"}`;
+    if (heightUnit === "percentageOfWidth") {
+        wrapperStyle.height = "auto";
+
+        if (minHeightUnit !== "none") {
+            wrapperStyle.minHeight = getHeightScale(minHeight, minHeightUnit);
+        }
+
+        if (maxHeightUnit !== "none") {
+            wrapperStyle.maxHeight = getHeightScale(maxHeight, maxHeightUnit);
+            wrapperStyle.overflowY = OverflowY;
+        }
+    } else {
+        wrapperStyle.height = getHeightScale(height, heightUnit);
     }
 
     return wrapperStyle;
