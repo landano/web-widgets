@@ -4,7 +4,7 @@
  * @author Mendix Widgets Framework Team
  */
 import { CSSProperties } from "react";
-import { ActionValue, DynamicValue, ListValue, ListActionValue, ListAttributeValue, WebImage } from "mendix";
+import { ActionValue, DynamicValue, EditableValue, ListValue, ListActionValue, ListAttributeValue, WebImage } from "mendix";
 import { Big } from "big.js";
 
 export type LocationTypeEnum = "address" | "latlng";
@@ -99,6 +99,8 @@ export interface MapsContainerProps {
     googleMapId: string;
     geoJSON?: DynamicValue<string>;
     onGeoJSONClick?: ActionValue;
+    enablePolygonDrawing: boolean;
+    polygonGeoJSON?: EditableValue<string>;
 }
 
 export interface MapsPreviewProps {
@@ -137,4 +139,6 @@ export interface MapsPreviewProps {
     googleMapId: string;
     geoJSON: string;
     onGeoJSONClick: {} | null;
+    enablePolygonDrawing: boolean;
+    polygonGeoJSON: string;
 }
