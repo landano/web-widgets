@@ -24,7 +24,6 @@ type ExtractionReturnValue = {
     customContentType: OptionsSourceAssociationCustomContentTypeEnum;
     ds: ListValue;
     emptyOption?: DynamicValue<string>;
-    emptyValue?: DynamicValue<string | Big>;
     filterType: FilterTypeEnum;
     lazyLoading: boolean;
     loadingType: LoadingTypeEnum;
@@ -43,7 +42,6 @@ export function extractDatabaseProps(props: ComboboxContainerProps): ExtractionR
     const captionAttribute = props.optionsSourceDatabaseCaptionAttribute;
     const captionExpression = props.optionsSourceDatabaseCaptionExpression;
     const emptyOption = props.emptyOptionText;
-    const emptyValue = props.optionsSourceDatabaseDefaultValue;
     const clearable = props.clearable;
     const customContent = props.optionsSourceDatabaseCustomContent;
     const customContentType = props.optionsSourceDatabaseCustomContentType;
@@ -82,10 +80,26 @@ export function extractDatabaseProps(props: ComboboxContainerProps): ExtractionR
         customContentType,
         ds,
         emptyOption,
-        emptyValue,
         filterType,
         lazyLoading,
         loadingType,
         valueSourceAttribute
     };
+}
+
+export function getReadonly(
+    targetAttribute: EditableValue<string | Big> | undefined,
+    customEditability: ComboboxContainerProps["customEditability"],
+    customEditabilityExpression: ComboboxContainerProps["customEditabilityExpression"]
+): boolean {
+    if (targetAttribute) {
+        return targetAttribute.readOnly;
+    }
+    if (customEditability === "never") {
+        return true;
+    }
+    if (customEditability === "conditionally") {
+        return customEditabilityExpression.value ?? true;
+    }
+    return false;
 }

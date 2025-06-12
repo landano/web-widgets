@@ -40,6 +40,8 @@ jobs:
           cache: "pnpm"
       - name: Install dependencies
         run: pnpm install
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps chromium
       - name: "Executing E2E tests"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,14 +58,11 @@ jobs:
           sudo find ${{ github.workspace }}/packages/* -type d -exec chmod 755 {} \;
           sudo find ${{ github.workspace }}/packages/* -type f -exec chmod 644 {} \;
       - name: "Archive test screenshot diff results"
-        uses: actions/upload-artifact@ff15f0306b3f739f7b6fd43fb5d26cd321bd4de5 # v3.2.1
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         if: failure()
         with:
           name: test-screenshot-results
           path: |
             ${{ github.workspace }}/packages/**/tests/e2e/screenshot-results/diff/**/*.png
             ${{ github.workspace }}/packages/**/tests/e2e/screenshot-results/TESTFAIL_*.png
-            ${{ github.workspace }}/packages/**/cypress-visual-screenshots/diff/*.png
-            ${{ github.workspace }}/packages/**/cypress-visual-screenshots/comparison/*.png
-            ${{ github.workspace }}/packages/**/cypress/videos/*.mp4
           if-no-files-found: error

@@ -19,7 +19,6 @@ describe("Rich Text", () => {
             width: 100,
             heightUnit: "percentageOfWidth",
             height: 75,
-            minHeight: 75,
             toolbarConfig: "basic",
             history: true,
             fontStyle: true,
@@ -32,17 +31,30 @@ describe("Rich Text", () => {
             list: true,
             remove: true,
             header: true,
+            view: true,
+            tableBetter: false,
             advancedConfig: [],
             readOnlyStyle: "text",
             tabIndex: 0,
             onChangeType: "onLeave",
             enableStatusBar: true,
-            spellCheck: true
+            spellCheck: true,
+            minHeightUnit: "none",
+            maxHeightUnit: "none",
+            maxHeight: 0,
+            minHeight: 75,
+            OverflowY: "auto",
+            customFonts: []
         };
     });
 
     it("renders richtext widget", () => {
         const component = render(<RichText {...defaultProps} />);
+        expect(component.container).toMatchSnapshot();
+    });
+
+    it("renders richtext widget with different config", () => {
+        const component = render(<RichText {...defaultProps} toolbarLocation={"top"} preset={"full"} />);
         expect(component.container).toMatchSnapshot();
     });
 });

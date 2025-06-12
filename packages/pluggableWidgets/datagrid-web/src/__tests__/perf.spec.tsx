@@ -4,7 +4,7 @@ import "@testing-library/jest-dom";
 import { configure } from "@testing-library/dom";
 import { render } from "@testing-library/react";
 import { Big } from "big.js";
-import { createElement, Profiler } from "react";
+import { createElement, Profiler, ReactElement } from "react";
 import { ColumnsType, DatagridContainerProps } from "../../typings/DatagridProps";
 import Datagrid from "../Datagrid";
 import { data } from "./snapshot";
@@ -42,7 +42,8 @@ const mockColumn = (columnIndex: number): ColumnsType => {
         size: 1,
         alignment: "left",
         wrapText: false,
-        fetchOptionsLazy: true
+        fetchOptionsLazy: true,
+        filterCaptionType: "attribute"
     };
 
     return column;
@@ -84,12 +85,14 @@ describe("Datagrid", () => {
             filterList: [],
             configurationStorageType: "attribute",
             configurationAttribute: undefined,
-            loadingType: "spinner"
+            loadingType: "spinner",
+            storeFiltersInPersonalization: true,
+            showNumberOfRows: false
         };
         const user = userEvent.setup();
         let renderCount = 0;
         const onRender = (): number => ++renderCount;
-        const WithProfiler = (): JSX.Element => (
+        const WithProfiler = (): ReactElement => (
             <Profiler id="grid" onRender={onRender}>
                 <Datagrid {...props} />
             </Profiler>

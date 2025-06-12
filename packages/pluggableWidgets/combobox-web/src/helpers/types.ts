@@ -1,3 +1,5 @@
+import { ThreeStateCheckBoxEnum } from "@mendix/widget-plugin-component-kit/ThreeStateCheckBox";
+import { DynamicValue, ListAttributeValue, ListExpressionValue, ListValue } from "mendix";
 import { ReactNode } from "react";
 import {
     ComboboxContainerProps,
@@ -5,11 +7,10 @@ import {
     LoadingTypeEnum,
     OptionsSourceAssociationCustomContentTypeEnum,
     ReadOnlyStyleEnum,
+    SelectedItemsSortingEnum,
     SelectedItemsStyleEnum,
     SelectionMethodEnum
 } from "../../typings/ComboboxProps";
-import { ThreeStateCheckBoxEnum } from "@mendix/widget-plugin-component-kit/ThreeStateCheckBox";
-import { ListValue } from "mendix";
 
 export type Status = "unavailable" | "loading" | "available";
 export type CaptionPlacement = "label" | "options";
@@ -21,6 +22,7 @@ export interface CaptionsProvider {
     get(value: string | null): string;
     render(value: (string | null) | (number | null), placement?: CaptionPlacement, htmlFor?: string): ReactNode;
     emptyCaption: string;
+    formatter?: ListExpressionValue<string> | ListAttributeValue<string>;
 }
 export interface ValuesProvider<T> {
     get(key: string | null): T | undefined;
@@ -84,6 +86,7 @@ export interface MultiSelector extends SelectorBase<"multi", string[]> {
     selectedItemsStyle: SelectedItemsStyleEnum;
     selectionMethod: SelectionMethodEnum;
     selectAllButton: boolean;
+    selectedItemsSorting: SelectedItemsSortingEnum;
     getOptions(): string[];
     isOptionsSelected(): ThreeStateCheckBoxEnum;
 }
@@ -96,7 +99,7 @@ export interface SelectionBaseProps<Selector> {
     selector: Selector;
     menuFooterContent?: ReactNode;
     tabIndex: number;
-    ariaRequired: boolean;
+    ariaRequired: DynamicValue<boolean>;
     a11yConfig: {
         ariaLabels: {
             clearSelection: string;

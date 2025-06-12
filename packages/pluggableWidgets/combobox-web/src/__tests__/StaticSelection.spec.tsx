@@ -4,9 +4,9 @@ import {
     list,
     listExp,
     ListAttributeValueBuilder,
-    ReferenceValueBuilder
+    ReferenceValueBuilder,
+    setupIntersectionObserverStub
 } from "@mendix/widget-plugin-test-utils";
-import "./__mocks__/intersectionObserverMock";
 import "@testing-library/jest-dom";
 import { fireEvent, render, RenderResult, act, waitFor } from "@testing-library/react";
 import { createElement } from "react";
@@ -22,6 +22,9 @@ async function getInput(component: RenderResult): Promise<HTMLInputElement> {
 }
 
 describe("Combo box (Static values)", () => {
+    beforeAll(() => {
+        setupIntersectionObserverStub();
+    });
     let defaultProps: ComboboxContainerProps;
     beforeEach(() => {
         defaultProps = {
@@ -39,7 +42,7 @@ describe("Combo box (Static values)", () => {
             optionsSourceAssociationCustomContentType: "no",
             optionsSourceAssociationCustomContent: undefined,
             emptyOptionText: dynamic("Select an option 111"),
-            ariaRequired: true,
+            ariaRequired: dynamic(true),
             clearable: true,
             filterType: "contains",
             selectedItemsStyle: "text",
@@ -57,7 +60,6 @@ describe("Combo box (Static values)", () => {
             showFooter: false,
             databaseAttributeString: new EditableValueBuilder<string | Big>().build(),
             optionsSourceDatabaseCaptionType: "attribute",
-            optionsSourceDatabaseDefaultValue: dynamic("empty value"),
             optionsSourceDatabaseCustomContentType: "yes",
             staticDataSourceCustomContentType: "no",
             staticAttribute: new EditableValueBuilder<string>().withValue("value1").build(),
@@ -72,7 +74,10 @@ describe("Combo box (Static values)", () => {
                     staticDataSourceCustomContent: undefined,
                     staticDataSourceCaption: dynamic("caption2")
                 }
-            ]
+            ],
+            selectedItemsSorting: "none",
+            customEditability: "default",
+            customEditabilityExpression: dynamic(false)
         };
         if (defaultProps.optionsSourceAssociationCaptionType === "expression") {
             defaultProps.optionsSourceAssociationCaptionExpression!.get = i => dynamic(`${i.id}`);
@@ -108,7 +113,7 @@ describe("Combo box (Static values)", () => {
         const option1 = await component.findByText("caption2");
         fireEvent.click(option1);
         expect(input.value).toEqual("caption2");
-        expect(defaultProps.staticAttribute?.setValue).toBeCalled();
+        expect(defaultProps.staticAttribute?.setValue).toHaveBeenCalled();
         expect(component.queryAllByRole("option")).toHaveLength(0);
         expect(defaultProps.staticAttribute?.value).toEqual("value2");
     });

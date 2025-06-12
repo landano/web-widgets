@@ -2,6 +2,7 @@
 
 $rte-border-color-default: #ced0d3;
 $rte-gray-ligher: #f8f8f8;
+$rte-brand-primary: #264ae5;
 
 .widget-rich-text {
     position: relative;
@@ -11,6 +12,38 @@ $rte-gray-ligher: #f8f8f8;
     }
     .ql-container {
         border: unset;
+        overflow: hidden;
+    }
+
+    &.fullscreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 104;
+        background-color: white;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        box-sizing: border-box;
+        margin: 0;
+        border: none;
+        max-width: none;
+        max-height: none;
+        transform: none;
+        outline: none;
+
+        min-width: 100vw;
+        min-height: 100vh;
+
+        .flexcontainer {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
     }
 
     .flex-column-reverse {
@@ -43,6 +76,16 @@ $rte-gray-ligher: #f8f8f8;
             max-height: 250px;
             overflow-y: auto;
         }
+
+        .ql-formats {
+            button:focus {
+                font-weight: bold;
+            }
+        }
+    }
+
+    .hide-toolbar .ql-toolbar {
+        display: none;
     }
 
     .widget-rich-text-footer {

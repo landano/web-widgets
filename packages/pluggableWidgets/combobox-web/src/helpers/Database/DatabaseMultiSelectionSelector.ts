@@ -4,11 +4,13 @@ import {
     ComboboxContainerProps,
     LoadingTypeEnum,
     OptionsSourceAssociationCustomContentTypeEnum,
+    SelectedItemsSortingEnum,
     SelectedItemsStyleEnum,
     SelectionMethodEnum
 } from "../../../typings/ComboboxProps";
 import { LazyLoadProvider } from "../LazyLoadProvider";
 import { MultiSelector, Status } from "../types";
+import { sortSelectedItems } from "../utils";
 import { DatabaseCaptionsProvider } from "./DatabaseCaptionsProvider";
 import { DatabaseOptionsProvider } from "./DatabaseOptionsProvider";
 import { extractDatabaseProps } from "./utils";
@@ -30,6 +32,7 @@ export class DatabaseMultiSelectionSelector implements MultiSelector {
     type = "multi" as const;
     protected lazyLoader: LazyLoadProvider = new LazyLoadProvider();
     private _objectsMap: Map<string, ObjectItem> = new Map();
+    selectedItemsSorting: SelectedItemsSortingEnum = "none";
 
     constructor() {
         this.caption = new DatabaseCaptionsProvider(this._objectsMap);
@@ -118,12 +121,36 @@ export class DatabaseMultiSelectionSelector implements MultiSelector {
         this.selectAllButton = props.selectAllButton;
         this.selectedItemsStyle = props.selectedItemsStyle;
         this.selection = props.optionsSourceDatabaseItemSelection as SelectionMultiValue;
+        this.selection.setKeepSelection?.(() => true);
         this.selectionMethod = props.selectionMethod;
-        this.currentId = this.selection?.selection.map(v => v.id) ?? null;
+        this.selectedItemsSorting = props.selectedItemsSorting;
+
+        this.currentId = sortSelectedItems(
+            this.selection?.selection,
+            this.selectedItemsSorting,
+            this.options.sortOrder,
+            id => this.caption.get(id)
+        );
     }
 
     setValue(value: string[] | null): void {
-        const newValue = value?.map(v => this.options._optionToValue(v)!);
+        const newValue = value
+            ?.map(v => {
+                const knownObject = this.options._optionToValue(v);
+                if (knownObject) {
+                    return knownObject;
+                }
+
+                // look if this value is in the selection
+                const selectedObject = this.selection?.selection.find(item => item.id === v);
+                if (selectedObject) {
+                    return selectedObject;
+                }
+
+                console.warn(`Error setting value: '${v}', not found in options or selection`);
+                return null;
+            })
+            .filter((v): v is ObjectItem => !!v);
         if (newValue) {
             this.selection?.setSelection(newValue);
         }

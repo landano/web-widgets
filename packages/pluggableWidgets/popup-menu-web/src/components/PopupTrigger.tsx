@@ -13,7 +13,11 @@ export const PopupTrigger = forwardRef(
                 className={"popupmenu-trigger"}
                 ref={ref}
                 data-state={open ? "open" : "closed"}
-                {...getReferenceProps?.()}
+                {...getReferenceProps?.({
+                    onClick: e => {
+                        e.stopPropagation();
+                    }
+                })}
             >
                 {children}
             </div>

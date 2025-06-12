@@ -1,9 +1,9 @@
 {
     "name": "@mendix/area-chart-web",
     "widgetName": "AreaChart",
-    "version": "5.1.0",
+    "version": "6.2.0",
     "description": "An area chart displays a solid color between the traces of a graph.",
-    "copyright": "© Mendix Technology BV 2023. All rights reserved.",
+    "copyright": "© Mendix Technology BV 2025. All rights reserved.",
     "license": "Apache-2.0",
     "private": true,
     "repository": {
@@ -16,6 +16,7 @@
         "type": "widget",
         "mpkName": "com.mendix.widget.web.AreaChart.mpk"
     },
+    "packagePath": "com.mendix.widget.web",
     "marketplace": {
         "minimumMXVersion": "9.6.0",
         "appName": "Area Chart"
@@ -24,30 +25,29 @@
         "githubUrl": "https://github.com/mendix/testProjects",
         "branchName": "area-chart-web"
     },
-    "packagePath": "com.mendix.widget.web",
     "scripts": {
-        "start": "pluggable-widgets-tools start:server",
-        "dev": "pluggable-widgets-tools start:web",
         "build": "pluggable-widgets-tools build:ts",
-        "format": "prettier --write .",
-        "lint": "eslint --ext .jsx,.js,.ts,.tsx src/",
-        "test": "pluggable-widgets-tools test:unit:web",
+        "create-translation": "rui-create-translation",
+        "dev": "pluggable-widgets-tools start:web",
+        "format": "prettier --ignore-path ./node_modules/@mendix/prettier-config-web-widgets/global-prettierignore --write .",
+        "lint": "eslint src/ package.json",
         "release": "pluggable-widgets-tools release:web",
-        "verify": "rui-verify-package-format",
+        "start": "pluggable-widgets-tools start:server",
+        "test": "jest --projects jest.config.js",
         "update-changelog": "rui-update-changelog-widget",
-        "create-translation": "rui-create-translation"
-    },
-    "devDependencies": {
-        "@mendix/automation-utils": "workspace:*",
-        "@mendix/eslint-config-web-widgets": "workspace:*",
-        "@mendix/pluggable-widgets-tools": "10.16.0",
-        "@mendix/prettier-config-web-widgets": "workspace:*",
-        "@mendix/widget-plugin-platform": "workspace:*",
-        "@mendix/widget-plugin-test-utils": "workspace:*"
+        "verify": "rui-verify-package-format"
     },
     "dependencies": {
         "@mendix/shared-charts": "workspace:*",
         "classnames": "^2.3.2",
-        "plotly.js": "^2.35.2"
+        "plotly.js-dist-min": "^3.0.0"
+    },
+    "devDependencies": {
+        "@mendix/automation-utils": "workspace:*",
+        "@mendix/eslint-config-web-widgets": "workspace:*",
+        "@mendix/pluggable-widgets-tools": "*",
+        "@mendix/prettier-config-web-widgets": "workspace:*",
+        "@mendix/widget-plugin-platform": "workspace:*",
+        "@mendix/widget-plugin-test-utils": "workspace:*"
     }
 }

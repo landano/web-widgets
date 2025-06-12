@@ -1,4 +1,4 @@
-import { Component, createElement } from "react";
+import { Component, createElement, ReactNode } from "react";
 import { validateUrl } from "../utils/Utils";
 
 export interface DailymotionProps {
@@ -7,12 +7,13 @@ export interface DailymotionProps {
     showControls: boolean;
     muted: boolean;
     aspectRatio?: boolean;
+    title?: string;
 }
 
 export class Dailymotion extends Component<DailymotionProps> {
     private handleAttributes = this.getUrlAttributes.bind(this);
 
-    render(): JSX.Element {
+    render(): ReactNode {
         return (
             <iframe
                 className="widget-video-player-iframe"
@@ -20,6 +21,7 @@ export class Dailymotion extends Component<DailymotionProps> {
                 frameBorder="0"
                 allow="autoplay; fullscreen"
                 allowFullScreen
+                title={this.props.title}
             />
         );
     }
@@ -38,7 +40,7 @@ export class Dailymotion extends Component<DailymotionProps> {
                     return `https://www.dailymotion.com/embed/video/${id}${attributes}`;
                 }
             }
-        } catch (e) {
+        } catch (_e: unknown) {
             return url;
         }
         return url;

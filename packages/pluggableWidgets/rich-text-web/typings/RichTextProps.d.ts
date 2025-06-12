@@ -11,18 +11,34 @@ export type ToolbarLocationEnum = "auto" | "top" | "bottom" | "hide";
 
 export type ReadOnlyStyleEnum = "text" | "bordered" | "readPanel";
 
-export type WidthUnitEnum = "percentage" | "pixels";
+export type WidthUnitEnum = "pixels" | "percentage";
 
-export type HeightUnitEnum = "percentageOfWidth" | "pixels" | "percentageOfParent";
+export type HeightUnitEnum = "percentageOfWidth" | "pixels" | "percentageOfParent" | "percentageOfView";
+
+export type MinHeightUnitEnum = "none" | "pixels" | "percentageOfParent" | "percentageOfView";
+
+export type MaxHeightUnitEnum = "none" | "pixels" | "percentageOfParent" | "percentageOfView";
+
+export type OverflowYEnum = "auto" | "scroll" | "hidden";
 
 export type OnChangeTypeEnum = "onLeave" | "onDataChange";
 
+export interface CustomFontsType {
+    fontName: string;
+    fontStyle: string;
+}
+
 export type ToolbarConfigEnum = "basic" | "advanced";
 
-export type CtItemTypeEnum = "separator" | "undo" | "redo" | "bold" | "italic" | "underline" | "strike" | "superScript" | "subScript" | "orderedList" | "bulletList" | "lowerAlphaList" | "checkList" | "minIndent" | "plusIndent" | "direction" | "link" | "image" | "video" | "formula" | "blockquote" | "codeBlock" | "viewCode" | "align" | "centerAlign" | "rightAlign" | "font" | "color" | "background" | "header" | "clean";
+export type CtItemTypeEnum = "separator" | "undo" | "redo" | "bold" | "italic" | "underline" | "strike" | "superScript" | "subScript" | "orderedList" | "bulletList" | "lowerAlphaList" | "checkList" | "minIndent" | "plusIndent" | "direction" | "link" | "image" | "video" | "formula" | "blockquote" | "code" | "codeBlock" | "viewCode" | "align" | "centerAlign" | "rightAlign" | "font" | "size" | "color" | "background" | "header" | "fullscreen" | "clean" | "tableBetter";
 
 export interface AdvancedConfigType {
     ctItemType: CtItemTypeEnum;
+}
+
+export interface CustomFontsPreviewType {
+    fontName: string;
+    fontStyle: string;
 }
 
 export interface AdvancedConfigPreviewType {
@@ -42,13 +58,18 @@ export interface RichTextContainerProps {
     width: number;
     heightUnit: HeightUnitEnum;
     height: number;
+    minHeightUnit: MinHeightUnitEnum;
     minHeight: number;
+    maxHeightUnit: MaxHeightUnitEnum;
+    maxHeight: number;
+    OverflowY: OverflowYEnum;
     onChange?: ActionValue;
     onFocus?: ActionValue;
     onBlur?: ActionValue;
     onLoad?: ActionValue;
     onChangeType: OnChangeTypeEnum;
     spellCheck: boolean;
+    customFonts: CustomFontsType[];
     toolbarConfig: ToolbarConfigEnum;
     history: boolean;
     fontStyle: boolean;
@@ -60,13 +81,16 @@ export interface RichTextContainerProps {
     code: boolean;
     fontColor: boolean;
     header: boolean;
+    view: boolean;
     remove: boolean;
+    tableBetter: boolean;
     advancedConfig: AdvancedConfigType[];
 }
 
 export interface RichTextPreviewProps {
     readOnly: boolean;
-    renderMode?: "design" | "xray" | "structure";
+    renderMode: "design" | "xray" | "structure";
+    translate: (text: string) => string;
     stringAttribute: string;
     enableStatusBar: boolean;
     preset: PresetEnum;
@@ -76,13 +100,18 @@ export interface RichTextPreviewProps {
     width: number | null;
     heightUnit: HeightUnitEnum;
     height: number | null;
+    minHeightUnit: MinHeightUnitEnum;
     minHeight: number | null;
+    maxHeightUnit: MaxHeightUnitEnum;
+    maxHeight: number | null;
+    OverflowY: OverflowYEnum;
     onChange: {} | null;
     onFocus: {} | null;
     onBlur: {} | null;
     onLoad: {} | null;
     onChangeType: OnChangeTypeEnum;
     spellCheck: boolean;
+    customFonts: CustomFontsPreviewType[];
     toolbarConfig: ToolbarConfigEnum;
     history: boolean;
     fontStyle: boolean;
@@ -94,6 +123,8 @@ export interface RichTextPreviewProps {
     code: boolean;
     fontColor: boolean;
     header: boolean;
+    view: boolean;
     remove: boolean;
+    tableBetter: boolean;
     advancedConfig: AdvancedConfigPreviewType[];
 }

@@ -52,7 +52,8 @@ export function MultiSelection({
             if (selector.options.loadMore) {
                 selector.options.loadMore();
             }
-        }
+        },
+        readOnly: selector.readOnly
     });
 
     return (
@@ -132,7 +133,7 @@ export function MultiSelection({
                             },
                             disabled: selector.readOnly,
                             readOnly: selector.options.filterType === "none",
-                            "aria-required": ariaRequired
+                            "aria-required": ariaRequired.value
                         })}
                     />
                     <InputPlaceholder isEmpty={selectedItems.length <= 0}>{memoizedselectedCaptions}</InputPlaceholder>
@@ -162,6 +163,7 @@ export function MultiSelection({
                 menuHeaderContent={
                     selector.selectAllButton ? (
                         <SelectAllButton
+                            disabled={items.length === 0}
                             value={isOptionsSelected}
                             id={`${options.inputId}-select-all-button`}
                             ariaLabel={a11yConfig.ariaLabels.selectAll}

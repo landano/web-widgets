@@ -1,26 +1,29 @@
-import { ActionValue, ListValue, ObjectItem } from "mendix";
+import { ListValue, ObjectItem } from "mendix";
 import { FileUploaderContainerProps, UploadModeEnum } from "../../typings/FileUploaderProps";
 import { action, computed, makeObservable, observable } from "mobx";
 import { getImageUploaderFormats, parseAllowedFormats } from "../utils/parseAllowedFormats";
 import { FileStore } from "./FileStore";
-import { fileHasContents } from "../utils/mx-data";
 import { FileRejection } from "react-dropzone";
 import { FileCheckFormat } from "../utils/predefinedFormats";
 import { TranslationsStore } from "./TranslationsStore";
+import { ObjectCreationHelper } from "../utils/ObjectCreationHelper";
+import { DatasourceUpdateProcessor } from "../utils/DatasourceUpdateProcessor";
 
 export class FileUploaderStore {
     files: FileStore[] = [];
     lastSeenItems: Set<ObjectItem["id"]> = new Set<ObjectItem["id"]>();
-    currentWaiting: Array<(v: ObjectItem) => void> = [];
+
+    objectCreationHelper: ObjectCreationHelper;
+    updateProcessor: DatasourceUpdateProcessor;
 
     existingItemsLoaded = false;
+    isReadOnly: boolean;
 
     acceptedFileTypes: FileCheckFormat[];
 
     _widgetName: string;
     _uploadMode: UploadModeEnum;
-    _createObjectAction?: ActionValue;
-    _maxFileSizeMb = 0;
+    _maxFileSizeMiB = 0;
     _maxFileSize = 0;
     _ds?: ListValue;
     _maxFilesPerUpload: number;
@@ -31,10 +34,37 @@ export class FileUploaderStore {
 
     constructor(props: FileUploaderContainerProps, translations: TranslationsStore) {
         this._widgetName = props.name;
-        this._maxFileSizeMb = props.maxFileSize;
-        this._maxFileSize = this._maxFileSizeMb * 1024 * 1024;
+        this._maxFileSizeMiB = props.maxFileSize;
+        this._maxFileSize = this._maxFileSizeMiB * 1024 * 1024;
         this._maxFilesPerUpload = props.maxFilesPerUpload;
         this._uploadMode = props.uploadMode;
+
+        this.objectCreationHelper = new ObjectCreationHelper(this._widgetName, props.objectCreationTimeout);
+        this.updateProcessor = new DatasourceUpdateProcessor({
+            loaded: () => {
+                this.objectCreationHelper.enable();
+            },
+            processNew: (newItem: ObjectItem) => {
+                this.objectCreationHelper.processEmptyObjectItem(newItem);
+            },
+            processExisting: (existingItem: ObjectItem) => {
+                this.processExistingFileItem(existingItem);
+            },
+            processMissing: (missingItem: ObjectItem) => {
+                const missingFile = this.files.find(f => {
+                    return f._objectItem?.id === missingItem.id;
+                });
+
+                if (!missingFile) {
+                    console.warn(`Object ${missingItem.id} is not found in file stores.`);
+                    return;
+                }
+
+                missingFile?.markMissing();
+            }
+        });
+
+        this.isReadOnly = props.readOnlyMode;
 
         this.acceptedFileTypes =
             this._uploadMode === "files" ? parseAllowedFormats(props.allowedFileFormats) : getImageUploaderFormats();
@@ -57,47 +87,19 @@ export class FileUploaderStore {
 
     updateProps(props: FileUploaderContainerProps): void {
         if (props.uploadMode === "files") {
-            this._createObjectAction = props.createFileAction;
+            this.objectCreationHelper.updateProps(props.createFileAction);
             this._ds = props.associatedFiles;
         } else {
-            this._createObjectAction = props.createImageAction;
+            this.objectCreationHelper.updateProps(props.createImageAction);
             this._ds = props.associatedImages;
         }
 
         this.translations.updateProps(props);
-
-        const itemsDs = this._ds;
-        if (!this.existingItemsLoaded) {
-            if (itemsDs.status === "available" && itemsDs.items) {
-                for (const item of itemsDs.items) {
-                    this.processExistingFileItem(item);
-                }
-
-                this.existingItemsLoaded = true;
-            }
-        } else {
-            for (const newItem of findNewItems(this.lastSeenItems, itemsDs.items || [])) {
-                if (!fileHasContents(newItem)) {
-                    this.processEmptyFileItem(newItem);
-                } else {
-                    // adding this file to the list as is as this file is not empty and probably created externally
-                    this.processExistingFileItem(newItem);
-                }
-            }
-        }
+        this.updateProcessor.processUpdate(this._ds);
     }
 
     processExistingFileItem(item: ObjectItem): void {
         this.files.unshift(FileStore.existingFile(item, this));
-
-        this.lastSeenItems.add(item.id);
-    }
-
-    processEmptyFileItem(item: ObjectItem): void {
-        const firstWaiting = this.currentWaiting.shift();
-        if (firstWaiting) {
-            firstWaiting(item);
-        }
 
         this.lastSeenItems.add(item.id);
     }
@@ -111,30 +113,14 @@ export class FileUploaderStore {
             .join(", ");
     }
 
-    get canRequestFile(): boolean {
-        return this.existingItemsLoaded && !!this._createObjectAction;
-    }
-
-    requestFileObject(): Promise<ObjectItem> {
-        if (!this.canRequestFile) {
-            throw new Error("Can't request file");
-        }
-
-        return new Promise<ObjectItem>(resolve => {
-            this._createObjectAction!.execute();
-
-            this.currentWaiting.push(resolve);
-        });
-    }
-
     setMessage(msg?: string): void {
         this.errorMessage = msg;
     }
 
     processDrop(acceptedFiles: File[], fileRejections: FileRejection[]): void {
-        if (!this._createObjectAction || !this._createObjectAction.canExecute) {
+        if (!this.objectCreationHelper.canCreateFiles) {
             console.error(
-                `'Action to create new files' is not available or can't be executed. Please check if '${this._widgetName}' widget is configured correctly.`
+                `'Action to create new files/images' is not available or can't be executed. Please check if '${this._widgetName}' widget is configured correctly.`
             );
             this.setMessage(this.translations.get("unavailableCreateActionMessage"));
             return;
@@ -163,7 +149,7 @@ export class FileUploaderStore {
                         if (e.code === "file-too-large") {
                             return this.translations.get(
                                 "uploadFailureFileIsTooBigMessage",
-                                this._maxFileSizeMb.toString()
+                                this._maxFileSizeMiB.toString()
                             );
                         }
                         return e.message;
@@ -185,8 +171,4 @@ export class FileUploaderStore {
             }
         }
     }
-}
-
-function findNewItems(lastSeenItems: Set<ObjectItem["id"]>, currentItems: ObjectItem[]): ObjectItem[] {
-    return currentItems.filter(i => !lastSeenItems.has(i.id));
 }

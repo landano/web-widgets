@@ -101,14 +101,51 @@ export default class SignatureContainer extends Component<SignatureContainerProp
 
     private saveDocument(callback: () => void): void {
         if (this.base64Uri && this.state.hasSignature && this.props.mxObject) {
-            mx.data.saveDocument(
-                this.props.mxObject.getGuid(),
-                this.generateFileName(this.props.mxObject),
-                {},
-                Utils.convertUrlToBlob(this.base64Uri),
-                callback,
-                error => mx.ui.error("Error saving signature: " + error.message)
-            );
+            const error = function (callback: any): void {
+                return mx.ui.error("Error saving signature: " + callback.message);
+            };
+            // @ts-expect-error cordova specific code
+            const cdv = window.cordova;
+            if (cdv) {
+                // @ts-expect-error cordova specific code
+                const options = new FileUploadOptions();
+                options.fileKey = "blob";
+                options.fileName = this.generateFileName(this.props.mxObject);
+                options.mimeType = "image/png";
+                options.chunkedMode = false;
+                const headers = {
+                    Accept: "application/json",
+                    // @ts-expect-error cordova specific code
+                    "X-Csrf-Token": mx.session.sessionData.csrftoken,
+                    "X-Mx-ReqToken": new Date().getTime()
+                };
+                options.headers = headers;
+                const isHttps = mx.remoteUrl.includes("https");
+                const remoteUrlWithoutScheme = decodeURIComponent(mx.remoteUrl.replace(/.*_http[s]?_proxy_/, ""));
+                const remoteUrl = (isHttps ? "https://" : "http://") + remoteUrlWithoutScheme;
+                const guid = this.props.mxObject.getGuid();
+                const dataUri = this.base64Uri;
+
+                mx.data.commit({
+                    mxobj: this.props.mxObject,
+                    callback() {
+                        // @ts-expect-error cordova specific code
+                        const ft = new FileTransfer();
+                        const fileUploadUrl = remoteUrl + "file?guid=" + guid;
+                        ft.upload(dataUri, fileUploadUrl, callback, error, options);
+                    },
+                    error
+                });
+            } else {
+                mx.data.saveDocument(
+                    this.props.mxObject.getGuid(),
+                    this.generateFileName(this.props.mxObject),
+                    {},
+                    Utils.convertUrlToBlob(this.base64Uri),
+                    callback,
+                    error => mx.ui.error("Error saving signature: " + error.message)
+                );
+            }
         } else {
             callback();
         }

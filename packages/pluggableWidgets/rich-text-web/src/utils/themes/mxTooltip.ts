@@ -3,6 +3,7 @@ import Emitter from "quill/core/emitter";
 import LinkBlot from "quill/formats/link";
 import { BaseTooltip } from "quill/themes/base";
 import { linkConfigType } from "../formats";
+import { ACTION_DISPATCHER } from "../helpers";
 
 export default class MxTooltip extends BaseTooltip {
     static TEMPLATE = [
@@ -22,8 +23,6 @@ export default class MxTooltip extends BaseTooltip {
             if (this.root.classList.contains("ql-editing")) {
                 this.save();
             } else {
-                // @ts-expect-error Fix me later
-                console.log("[DEV]", this.preview.textContent);
                 // @ts-expect-error Fix me later
                 this.edit("link", this.preview.textContent);
             }
@@ -80,7 +79,7 @@ export default class MxTooltip extends BaseTooltip {
                     title: this.linkDOMNode?.getAttribute("title") ?? undefined,
                     target: this.linkDOMNode?.getAttribute("target") ?? undefined
                 };
-                this.quill.emitter.emit("EDIT-TOOLTIP", linkConfig);
+                this.quill.emitter.emit(ACTION_DISPATCHER, linkConfig);
             }
         } else {
             super.edit(mode, preview);

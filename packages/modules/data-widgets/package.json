@@ -1,9 +1,9 @@
 {
     "name": "@mendix/data-widgets",
     "moduleName": "Data Widgets",
-    "version": "2.28.2",
+    "version": "2.32.1",
+    "copyright": "© Mendix Technology BV 2025. All rights reserved.",
     "license": "Apache-2.0",
-    "copyright": "© Mendix Technology BV 2023. All rights reserved.",
     "private": true,
     "repository": {
         "type": "git",
@@ -27,28 +27,28 @@
     },
     "moduleFolderNameInModeler": "datawidgets",
     "marketplace": {
-        "minimumMXVersion": "10.12.6.46815",
+        "minimumMXVersion": "10.21.0.64362",
         "appNumber": 116540,
         "appName": "Data Widgets"
     },
     "testProject": {
         "githubUrl": "https://github.com/mendix/DataWidgets-module",
-        "branchName": "main"
+        "branchName": "mts/10.21"
     },
     "scripts": {
-        "verify": "rui-verify-package-format",
-        "update-changelog": "rui-update-changelog-module",
-        "build:module": "ts-node --project scripts/tsconfig.json scripts/build.ts",
         "build:deps": "turbo run build --filter=data-widgets^...",
         "build:include-deps": "pnpm run build:deps && pnpm run build:module",
+        "build:module": "ts-node --project scripts/tsconfig.json scripts/build.ts",
         "create-gh-release": "rui-create-gh-release",
+        "create-module-mpk": "turbo release:module --filter data-widgets",
+        "format": "prettier --ignore-path ./node_modules/@mendix/prettier-config-web-widgets/global-prettierignore --write .",
+        "lint": "tsc --project scripts/tsconfig.json",
+        "publish-marketplace": "rui-publish-marketplace",
         "push-update": "ts-node --project scripts/tsconfig.json scripts/push-update.ts",
         "release:module": "ts-node --project scripts/tsconfig.json scripts/release.ts",
-        "create-module-mpk": "turbo release:module --filter data-widgets",
         "start": "ts-node --project scripts/tsconfig.json scripts/start.ts",
-        "publish-marketplace": "rui-publish-marketplace",
-        "format": "prettier --write .",
-        "lint": "tsc --project scripts/tsconfig.json"
+        "update-changelog": "rui-update-changelog-module",
+        "verify": "rui-verify-package-format"
     },
     "dependencies": {
         "@mendix/datagrid-date-filter-web": "workspace:*",
@@ -64,11 +64,11 @@
     "devDependencies": {
         "@mendix/automation-utils": "workspace:*",
         "@mendix/prettier-config-web-widgets": "workspace:*",
-        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@rollup/plugin-node-resolve": "^16.0.0",
         "@rollup/plugin-terser": "^0.4.4",
         "concurrently": "^6.5.1",
         "copy-and-watch": "^0.1.6",
-        "rollup": "^2.79.2",
-        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.0/xlsx-0.20.0.tgz"
+        "rollup": "*",
+        "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
     }
 }

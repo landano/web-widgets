@@ -15,7 +15,9 @@ const toolbarGroupKeys: Array<keyof RichTextPreviewProps> = [
     "align",
     "code",
     "header",
-    "remove"
+    "remove",
+    "view",
+    "tableBetter"
 ];
 
 export function getProperties(values: RichTextPreviewProps, defaultProperties: Properties): Properties {
@@ -30,12 +32,24 @@ export function getProperties(values: RichTextPreviewProps, defaultProperties: P
         hidePropertiesIn(defaultProperties, values, toolbarGroupKeys);
     }
 
-    if (values.heightUnit === "pixels") {
+    if (values.heightUnit === "percentageOfWidth") {
+        hidePropertyIn(defaultProperties, values, "height");
+    } else {
+        hidePropertiesIn(defaultProperties, values, [
+            "minHeight",
+            "minHeightUnit",
+            "maxHeight",
+            "maxHeightUnit",
+            "OverflowY"
+        ]);
+    }
+
+    if (values.minHeightUnit === "none") {
         hidePropertyIn(defaultProperties, values, "minHeight");
     }
 
-    if (values.widthUnit === "percentage" && values.heightUnit === "percentageOfWidth") {
-        hidePropertyIn(defaultProperties, values, "height");
+    if (values.maxHeightUnit === "none") {
+        hidePropertiesIn(defaultProperties, values, ["maxHeight", "OverflowY"]);
     }
 
     if (!values.onChange) {

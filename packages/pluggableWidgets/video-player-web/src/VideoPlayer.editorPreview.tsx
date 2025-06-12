@@ -1,5 +1,5 @@
 import { parseStyle } from "@mendix/widget-plugin-platform/preview/parse-style";
-import { Component, createElement } from "react";
+import { Component, createElement, ReactNode } from "react";
 import classNames from "classnames";
 
 import { SizeContainer } from "./components/SizeContainer";
@@ -9,8 +9,8 @@ import { VideoPlayerPreviewProps } from "../typings/VideoPlayerProps";
 
 declare function require(name: string): string;
 
-export class preview extends Component<VideoPlayerPreviewProps, {}> {
-    render(): JSX.Element {
+export class preview extends Component<VideoPlayerPreviewProps, NonNullable<unknown>> {
+    render(): ReactNode {
         return (
             <SizeContainer
                 className={classNames("video-player-container", this.props.className)}

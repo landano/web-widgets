@@ -1,5 +1,5 @@
 import { Big } from "big.js";
-import { ObjectItem } from "mendix";
+import { ListActionValue, ObjectItem } from "mendix";
 import { action, computed, makeObservable, observable, runInAction } from "mobx";
 import mimeTypes from "mime-types";
 
@@ -13,9 +13,11 @@ import {
     removeObject,
     saveFile
 } from "../utils/mx-data";
+import { executeAction } from "@mendix/widget-plugin-platform/framework/execute-action";
 
 export type FileStatus =
     | "existingFile"
+    | "missing"
     | "new"
     | "uploading"
     | "done"
@@ -57,8 +59,29 @@ export class FileStore {
             canRemove: computed,
             imagePreviewUrl: computed,
             upload: action,
-            fetchMxObject: action
+            fetchMxObject: action,
+            markMissing: action
         });
+    }
+
+    markMissing(): void {
+        this.fileStatus = "missing";
+        this._mxObject = undefined;
+        this._objectItem = undefined;
+    }
+
+    canExecute(listAction: ListActionValue): boolean {
+        if (!this._objectItem) {
+            return false;
+        }
+
+        return listAction.get(this._objectItem).canExecute;
+    }
+
+    executeAction(listAction?: ListActionValue): void {
+        if (listAction && this._objectItem) {
+            executeAction(listAction.get(this._objectItem));
+        }
     }
 
     validate(): boolean {
@@ -77,20 +100,14 @@ export class FileStore {
 
         try {
             // request object item
-            this._objectItem = await this._rootStore.requestFileObject();
-            if (this._objectItem) {
-                await saveFile(this._objectItem, this._file!);
-                await this.fetchMxObject();
+            this._objectItem = await this._rootStore.objectCreationHelper.request();
+            await saveFile(this._objectItem, this._file!);
+            await this.fetchMxObject();
 
-                runInAction(() => {
-                    this.fileStatus = "done";
-                });
-            } else {
-                runInAction(() => {
-                    this.fileStatus = "uploadingError";
-                });
-            }
-        } catch (e: unknown) {
+            runInAction(() => {
+                this.fileStatus = "done";
+            });
+        } catch (_e: unknown) {
             runInAction(() => {
                 this.fileStatus = "uploadingError";
             });
@@ -99,7 +116,7 @@ export class FileStore {
 
     get title(): string {
         if (this._mxObject) {
-            return this._mxObject?.get2("Name").toString();
+            return this._mxObject.get2("Name")?.toString();
         }
 
         return this._file?.name ?? "...";
@@ -107,7 +124,7 @@ export class FileStore {
 
     get size(): number {
         if (this._mxObject) {
-            return (this._mxObject.get2("Size") as Big).toNumber();
+            return (this._mxObject.get2("Size") as Big)?.toNumber();
         }
 
         return this._file?.size ?? -1;
@@ -118,7 +135,15 @@ export class FileStore {
     }
 
     get canRemove(): boolean {
-        return this.fileStatus === "existingFile" || this.fileStatus === "done";
+        return (!this._rootStore.isReadOnly && this.fileStatus === "existingFile") || this.fileStatus === "done";
+    }
+
+    get canDownload(): boolean {
+        return this.fileStatus === "done" || this.fileStatus === "existingFile";
+    }
+
+    get canExecuteActions(): boolean {
+        return !!this._objectItem;
     }
 
     async remove(): Promise<void> {

@@ -63,6 +63,7 @@ export interface GalleryContainerProps {
     filterSectionTitle?: DynamicValue<string>;
     emptyMessageTitle?: DynamicValue<string>;
     ariaLabelListBox?: DynamicValue<string>;
+    ariaLabelItem?: ListExpressionValue<string>;
 }
 
 export interface GalleryPreviewProps {
@@ -74,7 +75,8 @@ export interface GalleryPreviewProps {
     style: string;
     styleObject?: CSSProperties;
     readOnly: boolean;
-    renderMode?: "design" | "xray" | "structure";
+    renderMode: "design" | "xray" | "structure";
+    translate: (text: string) => string;
     advanced: boolean;
     datasource: {} | { caption: string } | { type: string } | null;
     itemSelection: "None" | "Single" | "Multi";
@@ -98,4 +100,5 @@ export interface GalleryPreviewProps {
     filterSectionTitle: string;
     emptyMessageTitle: string;
     ariaLabelListBox: string;
+    ariaLabelItem: string;
 }

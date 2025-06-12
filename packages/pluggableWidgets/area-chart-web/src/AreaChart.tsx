@@ -3,7 +3,6 @@ import {
     ChartWidgetProps,
     SeriesMapper,
     containerPropsEqual,
-    getPlotChartDataTransforms,
     usePlotChartDataSeries
 } from "@mendix/shared-charts/main";
 import "@mendix/shared-charts/ui/Chart.scss";
@@ -31,12 +30,13 @@ const areaChartConfigOptions: ChartWidgetProps["configOptions"] = {
 const areaChartSeriesOptions: ChartWidgetProps["seriesOptions"] = {};
 
 // disable eslint rule to have nice component name in component tree at devtools
-// eslint-disable-next-line prefer-arrow-callback
+
 export const AreaChart = memo(function AreaChart(props: AreaChartContainerProps): ReactElement {
     const mapSeries = useCallback<SeriesMapper<SeriesType>>((line, dataPoints, { getExpressionValue }) => {
         const lineColorExpression = line.dataSet === "static" ? line.staticLineColor : line.dynamicLineColor;
         const markerColorExpression = line.dataSet === "static" ? line.staticMarkerColor : line.dynamicMarkerColor;
         const fillColorExpression = line.dataSet === "static" ? line.staticFillColor : line.dynamicFillColor;
+
         return {
             type: "scatter",
             fill: "tonexty",
@@ -54,8 +54,7 @@ export const AreaChart = memo(function AreaChart(props: AreaChartContainerProps)
                 color: markerColorExpression
                     ? getExpressionValue<string>(markerColorExpression, dataPoints.dataSourceItems)
                     : undefined
-            },
-            transforms: getPlotChartDataTransforms(line.aggregationType, dataPoints)
+            }
         };
     }, []);
 

@@ -44,7 +44,14 @@ export function SingleSelection({
 
     const selectedItemCaption = useMemo(
         () => selector.caption.render(selectedItem, "label"),
-        [selectedItem, selector.status, selector.caption.emptyCaption]
+        [
+            selectedItem,
+            selector.status,
+            selector.caption,
+            selector.caption.emptyCaption,
+            selector.currentId,
+            selector.caption.formatter
+        ]
     );
 
     return (
@@ -72,7 +79,7 @@ export function SingleSelection({
                                 disabled: selector.readOnly,
                                 readOnly: selector.options.filterType === "none",
                                 ref: inputRef,
-                                "aria-required": ariaRequired
+                                "aria-required": ariaRequired.value
                             },
                             { suppressRefError: true }
                         )}

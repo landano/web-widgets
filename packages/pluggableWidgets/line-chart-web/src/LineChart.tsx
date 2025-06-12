@@ -1,10 +1,4 @@
-import {
-    ChartWidget,
-    ChartWidgetProps,
-    getPlotChartDataTransforms,
-    traceEqual,
-    usePlotChartDataSeries
-} from "@mendix/shared-charts/main";
+import { ChartWidget, ChartWidgetProps, traceEqual, usePlotChartDataSeries } from "@mendix/shared-charts/main";
 import "@mendix/shared-charts/ui/Chart.scss";
 import { defaultEqual, flatEqual } from "@mendix/widget-plugin-platform/utils/flatEqual";
 import classNames from "classnames";
@@ -32,7 +26,7 @@ const lineChartSeriesOptions: ChartWidgetProps["seriesOptions"] = {};
 
 export const LineChart = memo(
     // disable eslint rule to have nice component name in component tree at devtools
-    // eslint-disable-next-line prefer-arrow-callback
+
     function LineChart(props: LineChartContainerProps): ReactElement | null {
         const chartLines = usePlotChartDataSeries(
             props.lines,
@@ -54,8 +48,7 @@ export const LineChart = memo(
                         color: markerColorExpression
                             ? getExpressionValue<string>(markerColorExpression, dataPoints.dataSourceItems)
                             : undefined
-                    },
-                    transforms: getPlotChartDataTransforms(line.aggregationType, dataPoints)
+                    }
                 };
             }, [])
         );

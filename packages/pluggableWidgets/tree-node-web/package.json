@@ -3,7 +3,7 @@
     "widgetName": "TreeNode",
     "version": "1.2.1",
     "description": "A Mendix pluggable widget to display a tree view structure.",
-    "copyright": "© Mendix Technology BV 2023. All rights reserved.",
+    "copyright": "© Mendix Technology BV 2025. All rights reserved.",
     "license": "Apache-2.0",
     "private": true,
     "repository": {
@@ -16,38 +16,39 @@
         "type": "widget",
         "mpkName": "com.mendix.widget.web.TreeNode.mpk"
     },
+    "packagePath": "com.mendix.widget.web",
     "marketplace": {
         "minimumMXVersion": "9.17.0",
         "appName": "Tree Node"
     },
     "testProject": {
         "githubUrl": "https://github.com/mendix/testProjects",
-        "branchName": "tree-node-web"
+        "branchName": "tree-node-web/main"
     },
-    "packagePath": "com.mendix.widget.web",
     "scripts": {
-        "start": "pluggable-widgets-tools start:server",
-        "dev": "pluggable-widgets-tools start:web",
         "build": "pluggable-widgets-tools build:web",
-        "format": "prettier --write .",
-        "lint": "eslint --ext .jsx,.js,.ts,.tsx src/",
-        "test": "jest --projects jest.config.js",
-        "release": "pluggable-widgets-tools release:web",
-        "verify": "rui-verify-package-format",
-        "update-changelog": "rui-update-changelog-widget",
+        "create-translation": "rui-create-translation",
+        "dev": "pluggable-widgets-tools start:web",
         "e2e": "run-e2e ci",
+        "e2e-update-project": "pnpm -w exec turbo run build:module --filter data-widgets --force",
         "e2edev": "run-e2e dev --with-preps",
-        "create-translation": "rui-create-translation"
+        "format": "prettier --ignore-path ./node_modules/@mendix/prettier-config-web-widgets/global-prettierignore --write .",
+        "lint": "eslint src/ package.json",
+        "release": "pluggable-widgets-tools release:web",
+        "start": "pluggable-widgets-tools start:server",
+        "test": "jest --projects jest.config.js",
+        "update-changelog": "rui-update-changelog-widget",
+        "verify": "rui-verify-package-format"
+    },
+    "dependencies": {
+        "classnames": "^2.3.2"
     },
     "devDependencies": {
         "@mendix/automation-utils": "workspace:*",
         "@mendix/eslint-config-web-widgets": "workspace:*",
-        "@mendix/pluggable-widgets-tools": "10.16.0",
+        "@mendix/pluggable-widgets-tools": "*",
         "@mendix/prettier-config-web-widgets": "workspace:*",
         "@mendix/run-e2e": "workspace:*",
         "@mendix/widget-plugin-platform": "workspace:*"
-    },
-    "dependencies": {
-        "classnames": "^2.3.2"
     }
 }

@@ -1,15 +1,18 @@
 {
     "name": "@mendix/shared-charts",
-    "version": "2.0.1",
+    "version": "2.2.0",
     "description": "Shared components for charts",
+    "copyright": "© Mendix Technology BV 2025. All rights reserved.",
     "private": true,
-    "copyright": "© Mendix Technology BV 2023. All rights reserved.",
     "type": "module",
+    "files": [
+        "dist"
+    ],
     "exports": {
         ".": null,
+        "./*": "./dist/*.js",
         "./rollup/shared-libs-config.cjs": "./dist/rollup/shared-libs-config.cjs",
-        "./ui/*": "./dist/ui/*",
-        "./*": "./dist/*.js"
+        "./ui/*": "./dist/ui/*"
     },
     "typesVersions": {
         "*": {
@@ -18,21 +21,25 @@
             ]
         }
     },
-    "files": [
-        "dist"
-    ],
     "scripts": {
-        "predev": "pnpm clear && pnpm copy",
-        "dev": "tsc --build --verbose --watch tsconfig.json",
-        "clear": "rimraf ./dist",
-        "copy": "copy-and-watch \"src/**/*.{scss,svg}\" \"dist/\"",
         "build": "tsc --build --verbose tsconfig.build.json",
         "postbuild": "pnpm copy",
-        "release": "pnpm build",
+        "clear": "rimraf ./dist",
+        "copy": "copy-and-watch \"src/**/*.{scss,svg}\" \"dist/\"",
+        "predev": "pnpm clear && pnpm copy",
+        "dev": "tsc --build --verbose --watch tsconfig.json",
+        "format": "prettier --ignore-path ./node_modules/@mendix/prettier-config-web-widgets/global-prettierignore --write .",
+        "lint": "eslint . package.json && tsc --noEmit",
         "prepare": "turbo build",
-        "format": "prettier --write .",
-        "lint": "eslint --ext .jsx,.js,.ts,.tsx . && tsc --noEmit",
+        "release": "pnpm build",
         "test": "jest"
+    },
+    "dependencies": {
+        "classnames": "^2.3.2",
+        "deepmerge": "^4.3.1",
+        "plotly.js": "npm:plotly.js-dist-min@3.0.0",
+        "plotly.js-dist-min": "^3.0.0",
+        "react-plotly.js": "^2.6.0"
     },
     "devDependencies": {
         "@mendix/eslint-config-web-widgets": "workspace:*",
@@ -42,21 +49,15 @@
         "@mendix/widget-plugin-hooks": "workspace:*",
         "@mendix/widget-plugin-platform": "workspace:*",
         "@mendix/widget-plugin-test-utils": "workspace:*",
-        "@types/plotly.js": "^2.12.30",
-        "@types/react-plotly.js": "^2.5.0",
-        "copy-and-watch": "^0.1.6",
-        "rimraf": "^2.7.1"
-    },
-    "dependencies": {
-        "@rollup/plugin-commonjs": "^25.0.8",
-        "@rollup/plugin-node-resolve": "^15.2.3",
-        "@rollup/plugin-replace": "^2.4.2",
+        "@rollup/plugin-commonjs": "^28.0.3",
+        "@rollup/plugin-node-resolve": "^16.0.0",
+        "@rollup/plugin-replace": "^6.0.2",
         "@rollup/plugin-terser": "^0.4.4",
-        "classnames": "^2.3.2",
-        "deepmerge": "^4.3.1",
-        "plotly.js": "^2.35.2",
-        "react-plotly.js": "^2.6.0",
-        "rollup": "^2.79.2",
+        "@types/plotly.js-dist-min": "^2.3.4",
+        "@types/react-plotly.js": "^2.6.3",
+        "copy-and-watch": "^0.1.6",
+        "rimraf": "^4.4.1",
+        "rollup": "*",
         "rollup-plugin-copy": "^3.5.0"
     }
 }

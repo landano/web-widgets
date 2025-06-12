@@ -4,7 +4,7 @@
  * @author Mendix Widgets Framework Team
  */
 import { CSSProperties } from "react";
-import { ActionValue, DynamicValue, ListValue } from "mendix";
+import { ActionValue, DynamicValue, ListValue, ListActionValue, WebIcon } from "mendix";
 
 export type UploadModeEnum = "files" | "images";
 
@@ -20,12 +20,30 @@ export interface AllowedFileFormatsType {
     typeFormatDescription: DynamicValue<string>;
 }
 
+export interface CustomButtonsType {
+    buttonCaption: DynamicValue<string>;
+    buttonIcon: DynamicValue<WebIcon>;
+    buttonActionFile?: ListActionValue;
+    buttonActionImage?: ListActionValue;
+    buttonIsDefault: boolean;
+    buttonIsVisible: DynamicValue<boolean>;
+}
+
 export interface AllowedFileFormatsPreviewType {
     configMode: ConfigModeEnum;
     predefinedType: PredefinedTypeEnum;
     mimeType: string;
     extensions: string;
     typeFormatDescription: string;
+}
+
+export interface CustomButtonsPreviewType {
+    buttonCaption: string;
+    buttonIcon: { type: "glyph"; iconClass: string; } | { type: "image"; imageUrl: string; iconUrl: string; } | { type: "icon"; iconClass: string; } | undefined;
+    buttonActionFile: {} | null;
+    buttonActionImage: {} | null;
+    buttonIsDefault: boolean;
+    buttonIsVisible: string;
 }
 
 export interface FileUploaderContainerProps {
@@ -36,6 +54,7 @@ export interface FileUploaderContainerProps {
     uploadMode: UploadModeEnum;
     associatedFiles: ListValue;
     associatedImages: ListValue;
+    readOnlyMode: boolean;
     createFileAction?: ActionValue;
     createImageAction?: ActionValue;
     allowedFileFormats: AllowedFileFormatsType[];
@@ -55,6 +74,9 @@ export interface FileUploaderContainerProps {
     removeButtonTextMessage: DynamicValue<string>;
     removeSuccessMessage: DynamicValue<string>;
     removeErrorMessage: DynamicValue<string>;
+    objectCreationTimeout: number;
+    enableCustomButtons: boolean;
+    customButtons: CustomButtonsType[];
 }
 
 export interface FileUploaderPreviewProps {
@@ -66,10 +88,12 @@ export interface FileUploaderPreviewProps {
     style: string;
     styleObject?: CSSProperties;
     readOnly: boolean;
-    renderMode?: "design" | "xray" | "structure";
+    renderMode: "design" | "xray" | "structure";
+    translate: (text: string) => string;
     uploadMode: UploadModeEnum;
     associatedFiles: {} | { caption: string } | { type: string } | null;
     associatedImages: {} | { caption: string } | { type: string } | null;
+    readOnlyMode: boolean;
     createFileAction: {} | null;
     createImageAction: {} | null;
     allowedFileFormats: AllowedFileFormatsPreviewType[];
@@ -89,4 +113,7 @@ export interface FileUploaderPreviewProps {
     removeButtonTextMessage: string;
     removeSuccessMessage: string;
     removeErrorMessage: string;
+    objectCreationTimeout: number | null;
+    enableCustomButtons: boolean;
+    customButtons: CustomButtonsPreviewType[];
 }

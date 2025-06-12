@@ -1,10 +1,4 @@
-import {
-    ChartWidget,
-    ChartWidgetProps,
-    containerPropsEqual,
-    getPlotChartDataTransforms,
-    usePlotChartDataSeries
-} from "@mendix/shared-charts/main";
+import { ChartWidget, ChartWidgetProps, containerPropsEqual, usePlotChartDataSeries } from "@mendix/shared-charts/main";
 import "@mendix/shared-charts/ui/Chart.scss";
 import classNames from "classnames";
 import { ReactElement, createElement, memo, useCallback, useMemo } from "react";
@@ -36,7 +30,7 @@ const barChartSeriesOptions: ChartWidgetProps["seriesOptions"] = {
 };
 
 // disable eslint rule to have nice component name in component tree at devtools
-// eslint-disable-next-line prefer-arrow-callback
+
 export const BarChart = memo(function BarChart(props: BarChartContainerProps): ReactElement | null {
     const layoutOptions = useMemo(
         () => ({
@@ -51,6 +45,7 @@ export const BarChart = memo(function BarChart(props: BarChartContainerProps): R
         useCallback((dataSeries, dataPoints, { getExpressionValue }) => {
             const barColorExpression =
                 dataSeries.dataSet === "static" ? dataSeries.staticBarColor : dataSeries.dynamicBarColor;
+
             return {
                 type: "bar",
                 orientation: "h",
@@ -58,8 +53,7 @@ export const BarChart = memo(function BarChart(props: BarChartContainerProps): R
                     color: barColorExpression
                         ? getExpressionValue<string>(barColorExpression, dataPoints.dataSourceItems)
                         : undefined
-                },
-                transforms: getPlotChartDataTransforms(dataSeries.aggregationType, dataPoints)
+                }
             };
         }, [])
     );
