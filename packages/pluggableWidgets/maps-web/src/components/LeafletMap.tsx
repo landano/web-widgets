@@ -1,26 +1,25 @@
-import { createElement, ReactElement, useEffect, useState } from "react";
+import { createElement, ReactElement, useEffect } from "react";
 import {
     MapContainer,
     Marker as MarkerComponent,
     Popup,
     TileLayer,
     useMap,
-    GeoJSON,
-    Polygon,
-    useMapEvents
+    GeoJSON
 } from "react-leaflet";
 import classNames from "classnames";
 import { getDimensions } from "@mendix/widget-plugin-platform/utils/get-dimensions";
 import { SharedProps } from "../../typings/shared";
 import { MapProviderEnum } from "../../typings/MapsProps";
 import { translateZoom } from "../utils/zoom";
-import {
+import L, {
     latLngBounds,
     Icon as LeafletIcon,
     DivIcon,
     LeafletMouseEvent,
-    LatLng
+    FeatureGroup
 } from "leaflet";
+import "leaflet-draw";
 import { baseMapLayer } from "../utils/leaflet";
 import { ActionValue, EditableValue } from "mendix";
 export interface LeafletProps extends SharedProps {
@@ -80,62 +79,56 @@ function ExposeMapInstance() {
     return null;
 }
 
-interface PolygonDrawerProps {
-    drawing: boolean;
-    polygonGeoJSON?: EditableValue<string>;
-    onFinish(): void;
-}
-
-function PolygonDrawer({ drawing, polygonGeoJSON, onFinish }: PolygonDrawerProps): React.ReactElement | null {
-    const [points, setPoints] = useState<LatLng[]>([]);
+function DrawControl({ polygonGeoJSON }: { polygonGeoJSON?: EditableValue<string> }) {
+    const map = useMap();
 
     useEffect(() => {
-        if (!drawing) {
-            setPoints([]);
-        }
-    }, [drawing]);
+        const drawnItems = new FeatureGroup();
+        map.addLayer(drawnItems);
 
-    useMapEvents({
-        click: e => {
-            if (!drawing) {
-                return;
+        const drawControl = new (L.Control as any).Draw({
+            position: "topright",
+            draw: {
+                polygon: {
+                    allowIntersection: false,
+                    showArea: true,
+                    shapeOptions: { color: "#97009c" }
+                },
+                polyline: false,
+                rectangle: false,
+                circle: false,
+                marker: false,
+                circlemarker: false
+            },
+            edit: {
+                featureGroup: drawnItems,
+                remove: false
             }
-            setPoints(prev => [...prev, e.latlng]);
-        }
-    });
+        });
 
-    const finalize = () => {
-        if (points.length >= 3 && polygonGeoJSON) {
-            const coords = points.map(p => [p.lng, p.lat]);
-            coords.push([points[0].lng, points[0].lat]);
-            const geo = { type: "Polygon", coordinates: [coords] } as const;
-            polygonGeoJSON.setValue(JSON.stringify(geo));
-        }
-        setPoints([]);
-        onFinish();
-    };
+        map.addControl(drawControl);
 
-    if (!drawing) {
-        return null;
-    }
+        const handleCreated = (e: any) => {
+            drawnItems.clearLayers();
+            drawnItems.addLayer(e.layer);
+            if (polygonGeoJSON && !polygonGeoJSON.readOnly) {
+                const geometry = e.layer.toGeoJSON().geometry;
+                polygonGeoJSON.setValue(JSON.stringify(geometry));
+            }
+        };
 
-    return (
-        <>
-            {points.length > 0 && (
-                <MarkerComponent
-                    position={points[0]}
-                    eventHandlers={{
-                        click: e => {
-                            e.originalEvent.stopPropagation();
-                            finalize();
-                        }
-                    }}
-                />
-            )}
-            {points.length > 0 && <Polygon positions={points} pathOptions={{ color: "blue" }} />}
-        </>
-    );
+        map.on("draw:created", handleCreated);
+
+        return () => {
+            map.off("draw:created", handleCreated);
+            map.removeControl(drawControl);
+            map.removeLayer(drawnItems);
+        };
+    }, [map, polygonGeoJSON]);
+
+    return null;
 }
+
 
 function GeoJSONLayer({
     geoJSON,
@@ -196,10 +189,6 @@ export function LeafletMap(props: LeafletProps): ReactElement {
         onGeoJSONClick
     } = props;
 
-    const [drawing, setDrawing] = useState(false);
-
-    const handleFinishDrawing = () => setDrawing(false);
-
     console.log("[LeafletMap] GeoJSON passed to GeoJSONLayer:", geoJSON);
 
     return (
@@ -253,17 +242,7 @@ export function LeafletMap(props: LeafletProps): ReactElement {
                         ))}
                     <SetBoundsComponent autoZoom={autoZoom} currentLocation={currentLocation} locations={locations} />
                     <ExposeMapInstance />
-                    {props.enablePolygonDrawing && (
-                        <>
-                            <button
-                                className="widget-draw-polygon-btn"
-                                onClick={() => setDrawing(d => !d)}
-                            >
-                                {drawing ? "Finish" : "Draw polygon"}
-                            </button>
-                            <PolygonDrawer drawing={drawing} polygonGeoJSON={props.polygonGeoJSON} onFinish={handleFinishDrawing} />
-                        </>
-                    )}
+                    {props.enablePolygonDrawing && <DrawControl polygonGeoJSON={props.polygonGeoJSON} />}
                     {geoJSON && <GeoJSONLayer geoJSON={geoJSON} onGeoJSONClick={onGeoJSONClick} />}
                 </MapContainer>
             </div>
