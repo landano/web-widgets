@@ -351,7 +351,6 @@ export function LeafletMap(props: LeafletProps): ReactElement {
     // Get provider-specific maximum zoom level
     const maxZoom = getMaxZoomForProvider(mapProvider);
     console.log(`LeafletMap: Using maxZoom ${maxZoom} for provider ${mapProvider}`);
-
     console.log("[LeafletMap] Features: ", features);
 
     return (

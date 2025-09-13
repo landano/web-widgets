@@ -55,6 +55,7 @@ export interface DrawingProps {
     allowDelete: boolean;
 }
 
+
 export interface SharedProps extends Dimensions {
     autoZoom: boolean;
     optionZoomControl: boolean;

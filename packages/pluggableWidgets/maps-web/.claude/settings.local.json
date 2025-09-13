@@ -20,7 +20,12 @@
             "Bash(pnpm lint:*)",
             "Bash(pnpm test:*)",
             "Bash(pnpm jest:*)",
-            "Bash(git commit:*)"
+            "Bash(git commit:*)",
+            "Bash(git push:*)",
+            "Bash(git checkout:*)",
+            "Bash(cat:*)",
+            "WebFetch(domain:stackoverflow.com)",
+            "WebFetch(domain:leafletjs.com)"
         ],
         "deny": [],
         "ask": []
