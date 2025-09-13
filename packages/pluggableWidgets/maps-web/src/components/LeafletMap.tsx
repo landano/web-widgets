@@ -306,6 +306,31 @@ function GeoJSONLayer({ features }: { features: GeoJSONFeature[] }): React.React
     return (
         <GeoJSON
             data={geoJSONData}
+            style={feature => {
+                // Apply styles from feature properties
+                if (feature?.properties) {
+                    const props = feature.properties;
+                    return {
+                        stroke: props.stroke !== false, // Handle stroke property
+                        color: props.color || "#3388ff",
+                        weight: props.weight !== undefined ? props.weight : 3,
+                        opacity: props.opacity !== undefined ? props.opacity : 1.0,
+                        fill: props.fill !== false,
+                        fillColor: props.fillColor || props.color || "#3388ff", // Fallback to color if fillColor not set
+                        fillOpacity: props.fillOpacity !== undefined ? props.fillOpacity : 0.2
+                    };
+                }
+                // Default styles if no properties
+                return {
+                    stroke: true,
+                    color: "#3388ff",
+                    weight: 3,
+                    opacity: 1.0,
+                    fill: true,
+                    fillColor: "#3388ff",
+                    fillOpacity: 0.2
+                };
+            }}
             onEachFeature={(feature, layer) => {
                 console.log("onEachFeature called for feature:", feature);
                 if (feature.properties?.onClick) {
