@@ -201,9 +201,19 @@ function MapStabilizer(): null {
     useEffect(() => {
         // Initial map stabilization after mount
         const initialTimer = setTimeout(() => {
-            console.log("MapStabilizer: Initial map invalidateSize");
-            map.invalidateSize(true);
-        }, 100);
+            try {
+                // Check if map container and its parent are properly initialized
+                const container = map.getContainer();
+                if (container && container.parentElement && container.offsetWidth > 0 && container.offsetHeight > 0) {
+                    console.log("MapStabilizer: Initial map invalidateSize");
+                    map.invalidateSize(true);
+                } else {
+                    console.log("MapStabilizer: Container not ready, skipping initial invalidateSize");
+                }
+            } catch (error) {
+                console.warn("MapStabilizer: Error during initial invalidateSize:", error);
+            }
+        }, 300); // Increased delay to ensure container is ready
 
         // Set up ResizeObserver to handle container changes
         let resizeObserver: ResizeObserver | null = null;
@@ -228,15 +238,22 @@ function MapStabilizer(): null {
                             console.log("MapStabilizer: Container resized, calling invalidateSize");
                             // Debounce resize calls
                             setTimeout(() => {
-                                if (
-                                    !(
-                                        (window as any).isLeafletDrawingActive &&
-                                        (window as any).isLeafletDrawingActive()
-                                    )
-                                ) {
-                                    map.invalidateSize(true);
+                                try {
+                                    // Additional safety check before invalidating
+                                    if (
+                                        !(
+                                            (window as any).isLeafletDrawingActive &&
+                                            (window as any).isLeafletDrawingActive()
+                                        ) &&
+                                        container.offsetWidth > 0 &&
+                                        container.offsetHeight > 0
+                                    ) {
+                                        map.invalidateSize(true);
+                                    }
+                                } catch (error) {
+                                    console.warn("MapStabilizer: Error during resize invalidateSize:", error);
                                 }
-                            }, 50);
+                            }, 100); // Increased delay
                         }
                     }
                 });
@@ -336,11 +353,23 @@ function GeoJSONLayer({ features }: { features: GeoJSONFeature[] }): React.React
                 if (feature.properties?.onClick) {
                     layer.on("click", () => {
                         console.log("GeoJSON feature clicked:", feature);
-                        // If the Mendix action requires executing, call execute(), otherwise call it directly.
-                        if (feature.properties.onClick.execute) {
-                            feature.properties.onClick.execute();
-                        } else {
-                            feature.properties.onClick();
+                        try {
+                            const action = feature.properties.onClick;
+                            // Check if it's a function (already bound action) or an object with execute method
+                            if (typeof action === "function") {
+                                action();
+                            } else if (action && typeof action === "object" && "execute" in action) {
+                                // Check if the action can be executed
+                                if (!action.canExecute || action.canExecute === true) {
+                                    action.execute();
+                                } else {
+                                    console.log("GeoJSON onClick: Action cannot be executed");
+                                }
+                            } else {
+                                console.warn("GeoJSON onClick: Invalid action format", action);
+                            }
+                        } catch (error) {
+                            console.error("GeoJSON onClick: Error executing action", error);
                         }
                     });
                 }
