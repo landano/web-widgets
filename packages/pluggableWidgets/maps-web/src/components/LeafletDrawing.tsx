@@ -168,189 +168,191 @@ export function LeafletDrawing(props: DrawingProps): null {
             return;
         }
 
-        // Ensure map is fully initialized
-        if (!map.getContainer()) {
-            console.warn("Map container not ready for drawing controls");
-            return;
-        }
+        // Wait for map to be ready
+        const initializeControls = () => {
+            console.log("Initializing drawing controls");
 
-        // Initialize drawn items feature group
-        const drawnItems = new L.FeatureGroup();
-        map.addLayer(drawnItems);
-        drawnItemsRef.current = drawnItems;
+            // Initialize drawn items feature group
+            const drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
+            drawnItemsRef.current = drawnItems;
 
-        // Configure drawing options based on drawingTools setting
-        const drawOptions =
-            drawingTools === "all"
-                ? {
-                      polygon: {
-                          allowIntersection: false,
-                          showArea: false, // Disable area calculation to avoid measurement errors
-                          shapeOptions: {
-                              color: "#2E7D32",
-                              fillColor: "#81C784",
-                              fillOpacity: 0.3,
-                              weight: 3
-                          }
-                      },
-                      rectangle: {
-                          shapeOptions: {
-                              color: "#1565C0",
-                              fillColor: "#42A5F5",
-                              fillOpacity: 0.3,
-                              weight: 3
-                          }
-                      },
-                      polyline: {
-                          shapeOptions: {
-                              color: "#E91E63",
-                              weight: 4
-                          }
-                      },
-                      circle: {
-                          shapeOptions: {
-                              color: "#7B1FA2",
-                              fillColor: "#BA68C8",
-                              fillOpacity: 0.3,
-                              weight: 3
-                          }
-                      },
-                      circlemarker: false, // Explicitly disable circlemarker
-                      marker: true
-                  }
-                : {
-                      polygon: {
-                          allowIntersection: false,
-                          showArea: false, // Disable area calculation to avoid measurement errors
-                          shapeOptions: {
-                              color: "#2E7D32",
-                              fillColor: "#81C784",
-                              fillOpacity: 0.3,
-                              weight: 3
-                          }
-                      },
-                      rectangle: false,
-                      polyline: false,
-                      circle: false,
-                      circlemarker: false, // Explicitly disable circlemarker
-                      marker: false
-                  };
+            // Configure drawing options based on drawingTools setting
+            const drawOptions =
+                drawingTools === "all"
+                    ? {
+                          polygon: {
+                              allowIntersection: false,
+                              showArea: false, // Disable area calculation to avoid measurement errors
+                              shapeOptions: {
+                                  color: "#2E7D32",
+                                  fillColor: "#81C784",
+                                  fillOpacity: 0.3,
+                                  weight: 3
+                              }
+                          },
+                          rectangle: {
+                              shapeOptions: {
+                                  color: "#1565C0",
+                                  fillColor: "#42A5F5",
+                                  fillOpacity: 0.3,
+                                  weight: 3
+                              }
+                          },
+                          polyline: {
+                              shapeOptions: {
+                                  color: "#E91E63",
+                                  weight: 4
+                              }
+                          },
+                          circle: {
+                              shapeOptions: {
+                                  color: "#7B1FA2",
+                                  fillColor: "#BA68C8",
+                                  fillOpacity: 0.3,
+                                  weight: 3
+                              }
+                          },
+                          circlemarker: false, // Explicitly disable circlemarker
+                          marker: true
+                      }
+                    : {
+                          polygon: {
+                              allowIntersection: false,
+                              showArea: false, // Disable area calculation to avoid measurement errors
+                              shapeOptions: {
+                                  color: "#2E7D32",
+                                  fillColor: "#81C784",
+                                  fillOpacity: 0.3,
+                                  weight: 3
+                              }
+                          },
+                          rectangle: false,
+                          polyline: false,
+                          circle: false,
+                          circlemarker: false, // Explicitly disable circlemarker
+                          marker: false
+                      };
 
-        // Initialize draw control with proper typing
-        const DrawControl = (L.Control as any).Draw;
+            // Initialize draw control with proper typing
+            const DrawControl = (L.Control as any).Draw;
 
-        // Check if Draw control is available
-        if (!DrawControl) {
-            console.error("Leaflet Draw control not loaded");
-            return;
-        }
-
-        const drawControl = new DrawControl({
-            position: "topright",
-            draw: drawOptions,
-            edit: {
-                featureGroup: drawnItems,
-                edit: allowEdit !== false ? {} : false,
-                remove: allowDelete !== false ? {} : false
+            // Check if Draw control is available
+            if (!DrawControl) {
+                console.error("Leaflet Draw control not loaded");
+                return;
             }
-        });
 
-        map.addControl(drawControl);
-        drawControlRef.current = drawControl;
-
-        // Load existing drawings
-        loadExistingDrawings();
-
-        // Event handlers with drawing state tracking
-        const onDrawStart = (_e: any): void => {
-            isDrawingActiveRef.current = true;
-            console.log("Drawing started");
-        };
-
-        const onDrawStop = (_e: any): void => {
-            isDrawingActiveRef.current = false;
-            console.log("Drawing stopped");
-        };
-
-        const onEditStart = (_e: any): void => {
-            isEditingActiveRef.current = true;
-            console.log("Editing started");
-        };
-
-        const onEditStop = (_e: any): void => {
-            isEditingActiveRef.current = false;
-            console.log("Editing stopped");
-        };
-
-        const onDrawCreated = (e: any): void => {
-            try {
-                const layer = e.layer;
-
-                if (!layer) {
-                    console.error("No layer found in draw:created event");
-                    return;
+            const drawControl = new DrawControl({
+                position: "topright",
+                draw: drawOptions,
+                edit: {
+                    featureGroup: drawnItems,
+                    edit: allowEdit !== false ? {} : false,
+                    remove: allowDelete !== false ? {} : false
                 }
+            });
 
-                // Add layer to the feature group
-                if (drawnItemsRef.current) {
-                    drawnItemsRef.current.addLayer(layer);
-                } else {
-                    drawnItems.addLayer(layer);
-                }
+            map.addControl(drawControl);
+            drawControlRef.current = drawControl;
 
-                saveDrawnItems();
+            // Load existing drawings
+            loadExistingDrawings();
 
-                // Execute Mendix action if configured
-                if (onDrawComplete) {
-                    executeAction(onDrawComplete);
-                }
+            // Event handlers with drawing state tracking
+            const onDrawStart = (_e: any): void => {
+                isDrawingActiveRef.current = true;
+                console.log("Drawing started");
+            };
 
-                console.log("Drawing created:", layerToGeoJSON(layer));
-            } catch (error) {
-                console.error("Error handling draw:created event:", error);
-            } finally {
+            const onDrawStop = (_e: any): void => {
                 isDrawingActiveRef.current = false;
-            }
-        };
+                console.log("Drawing stopped");
+            };
 
-        const onDrawEdited = (_e: any): void => {
-            try {
-                saveDrawnItems();
-                console.log("Drawing edited");
-            } finally {
+            const onEditStart = (_e: any): void => {
+                isEditingActiveRef.current = true;
+                console.log("Editing started");
+            };
+
+            const onEditStop = (_e: any): void => {
                 isEditingActiveRef.current = false;
+                console.log("Editing stopped");
+            };
+
+            const onDrawCreated = (e: any): void => {
+                try {
+                    const layer = e.layer;
+
+                    if (!layer) {
+                        console.error("No layer found in draw:created event");
+                        return;
+                    }
+
+                    // Add layer to the feature group
+                    if (drawnItemsRef.current) {
+                        drawnItemsRef.current.addLayer(layer);
+                    } else {
+                        drawnItems.addLayer(layer);
+                    }
+
+                    saveDrawnItems();
+
+                    // Execute Mendix action if configured
+                    if (onDrawComplete) {
+                        executeAction(onDrawComplete);
+                    }
+
+                    console.log("Drawing created:", layerToGeoJSON(layer));
+                } catch (error) {
+                    console.error("Error handling draw:created event:", error);
+                } finally {
+                    isDrawingActiveRef.current = false;
+                }
+            };
+
+            const onDrawEdited = (_e: any): void => {
+                try {
+                    saveDrawnItems();
+                    console.log("Drawing edited");
+                } finally {
+                    isEditingActiveRef.current = false;
+                }
+            };
+
+            const onDrawDeleted = (_e: any): void => {
+                try {
+                    saveDrawnItems();
+                    console.log("Drawing deleted");
+                } finally {
+                    isEditingActiveRef.current = false;
+                }
+            };
+
+            // Bind events using Leaflet Draw event constants
+            const Draw = (L as any).Draw;
+            if (Draw?.Event) {
+                map.on(Draw.Event.DRAWSTART, onDrawStart);
+                map.on(Draw.Event.DRAWSTOP, onDrawStop);
+                map.on(Draw.Event.EDITSTART, onEditStart);
+                map.on(Draw.Event.EDITSTOP, onEditStop);
+                map.on(Draw.Event.CREATED, onDrawCreated);
+                map.on(Draw.Event.EDITED, onDrawEdited);
+                map.on(Draw.Event.DELETED, onDrawDeleted);
+            } else {
+                // Fallback to string events if constants not available
+                map.on("draw:drawstart" as any, onDrawStart);
+                map.on("draw:drawstop" as any, onDrawStop);
+                map.on("draw:editstart" as any, onEditStart);
+                map.on("draw:editstop" as any, onEditStop);
+                map.on("draw:created" as any, onDrawCreated);
+                map.on("draw:edited" as any, onDrawEdited);
+                map.on("draw:deleted" as any, onDrawDeleted);
             }
         };
 
-        const onDrawDeleted = (_e: any): void => {
-            try {
-                saveDrawnItems();
-                console.log("Drawing deleted");
-            } finally {
-                isEditingActiveRef.current = false;
-            }
-        };
-
-        // Bind events using Leaflet Draw event constants
-        const Draw = (L as any).Draw;
-        if (Draw?.Event) {
-            map.on(Draw.Event.DRAWSTART, onDrawStart);
-            map.on(Draw.Event.DRAWSTOP, onDrawStop);
-            map.on(Draw.Event.EDITSTART, onEditStart);
-            map.on(Draw.Event.EDITSTOP, onEditStop);
-            map.on(Draw.Event.CREATED, onDrawCreated);
-            map.on(Draw.Event.EDITED, onDrawEdited);
-            map.on(Draw.Event.DELETED, onDrawDeleted);
-        } else {
-            // Fallback to string events if constants not available
-            map.on("draw:drawstart" as any, onDrawStart);
-            map.on("draw:drawstop" as any, onDrawStop);
-            map.on("draw:editstart" as any, onEditStart);
-            map.on("draw:editstop" as any, onEditStop);
-            map.on("draw:created" as any, onDrawCreated);
-            map.on("draw:edited" as any, onDrawEdited);
-            map.on("draw:deleted" as any, onDrawDeleted);
-        }
+        // Initialize when map is ready
+        map.whenReady(initializeControls);
 
         // Cleanup function
         return () => {
