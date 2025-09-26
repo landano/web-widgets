@@ -149,7 +149,6 @@ Drawing Controls
     background: rgba(255, 255, 255, 0.95) !important;
     border-radius: 4px !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-    display: flex !important;
     flex-direction: column !important;
     padding: 0 !important;
     list-style: none !important;
@@ -157,6 +156,11 @@ Drawing Controls
     right: 36px !important;
     top: 0px !important;
     overflow: hidden !important;
+}
+
+.leaflet-draw-actions[style*="display: list-item"],
+.leaflet-draw-actions[style*="display: block"] {
+    display: flex !important;
 }
 
 .leaflet-draw-actions li {

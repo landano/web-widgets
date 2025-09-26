@@ -71,7 +71,7 @@ function SetBoundsComponent(
                         setBoundsSetForDataHash(drawingDataHash);
                     },
                     error => {
-                        console.warn("SetBoundsComponent: Failed to get user location:", error.message);
+                        console.debug("SetBoundsComponent: Failed to get user location:", error.message);
                         // Fallback: set a reasonable zoom level at current map center
                         map.setZoom(16);
                         setBoundsSetForDataHash(drawingDataHash);
