@@ -146,31 +146,44 @@ Drawing Controls
 
 /* Override default leaflet-draw styles for better integration */
 .leaflet-draw-actions {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 4px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-radius: 4px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 !important;
+    list-style: none !important;
+    position: absolute !important;
+    right: 36px !important;
+    top: 0px !important;
+    overflow: hidden !important;
 }
 
 .leaflet-draw-actions li {
-    float: left;
-    margin-right: 5px;
+    display: block !important;
+    margin: 0 !important;
 }
 
 .leaflet-draw-actions a {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 3px;
-    color: #495057;
-    display: block;
-    font-size: 12px;
-    padding: 4px 8px;
-    text-decoration: none;
-    transition: background-color 0.15s ease-in-out;
+    background: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 0 !important;
+    color: #495057 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 12px !important;
+    padding: 8px 12px !important;
+    text-decoration: none !important;
+    transition: background-color 0.15s ease-in-out !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    min-height: 32px !important;
 }
 
 .leaflet-draw-actions a:hover {
-    background: #e9ecef;
-    border-color: #adb5bd;
+    background: #e9ecef !important;
+    border-color: #adb5bd !important;
 }
 
 /* Ensure drawing controls don't interfere with other map controls */
