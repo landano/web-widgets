@@ -31,7 +31,8 @@ export function baseMapLayer(mapProvider: MapProviderEnum, mapsToken?: string): 
             id: "mapbox/satellite-streets-v12",
             tileSize: 512,
             zoomOffset: -1,
-            maxNativeZoom: 20 // Mapbox supports higher native zoom
+            maxNativeZoom: 20, // Mapbox supports higher native zoom
+            maxZoom: 22 // Allow oversampling beyond native zoom
         };
     } else if (mapProvider === "hereMaps") {
         if (mapsToken && mapsToken.indexOf(",") > 0) {
@@ -45,7 +46,8 @@ export function baseMapLayer(mapProvider: MapProviderEnum, mapsToken?: string): 
         return {
             attribution,
             url,
-            maxNativeZoom: 18 // HERE Maps conservative approach
+            maxNativeZoom: 18, // HERE Maps conservative approach
+            maxZoom: 20 // Allow oversampling beyond native zoom
         };
     } else {
         // OpenStreetMap (default)
@@ -54,7 +56,8 @@ export function baseMapLayer(mapProvider: MapProviderEnum, mapsToken?: string): 
         return {
             attribution,
             url,
-            maxNativeZoom: 19 // OSM tiles available up to 19
+            maxNativeZoom: 19, // OSM tiles available up to 19
+            maxZoom: 22 // Allow oversampling beyond native zoom
         };
     }
 }
