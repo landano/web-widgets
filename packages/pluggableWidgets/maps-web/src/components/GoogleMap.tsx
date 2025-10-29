@@ -12,7 +12,6 @@ import {
     useMap
 } from "@vis.gl/react-google-maps";
 import { Marker, SharedProps } from "../../typings/shared";
-import { translateZoom } from "../utils/zoom";
 import { getDimensions } from "@mendix/widget-plugin-platform/utils/get-dimensions";
 
 export interface GoogleMapsProps extends SharedProps {
@@ -49,16 +48,34 @@ function GoogleMap(props: GoogleMapsProps): ReactElement {
         optionScroll: scrollwheel,
         optionDrag: draggable,
         rotateControl,
+        showCurrentLocation,
         streetViewControl,
         style,
-        zoomLevel
+        zoomLevel,
+        zoomTo
     } = props;
+
+    // Determine the zoom level to use (default to street level 15 if automatic)
+    const effectiveZoomLevel = autoZoom ? 15 : zoomLevel;
 
     useEffect(() => {
         if (map) {
+            // Handle zoomTo option
+            if (zoomTo === "currentLocation") {
+                if (currentLocation) {
+                    map.setCenter({
+                        lat: currentLocation.latitude,
+                        lng: currentLocation.longitude
+                    });
+                    map.setZoom(effectiveZoomLevel);
+                }
+                return;
+            }
+
+            // Default behavior: zoom to markers/features
             const bounds = new google.maps.LatLngBounds();
             locations
-                .concat(currentLocation ? [currentLocation] : [])
+                .concat(showCurrentLocation && currentLocation ? [currentLocation] : [])
                 .filter(m => !!m)
                 .forEach(marker => {
                     bounds.extend({
@@ -75,12 +92,12 @@ function GoogleMap(props: GoogleMapsProps): ReactElement {
                 map.setCenter(bounds.getCenter());
             }
         }
-    }, [map, locations, currentLocation, autoZoom]);
+    }, [map, locations, currentLocation, autoZoom, zoomTo, effectiveZoomLevel, showCurrentLocation]);
 
     const mapOptions: MapProps = {
         className: "widget-google-maps",
         defaultCenter: center.current,
-        defaultZoom: autoZoom ? translateZoom("city") : zoomLevel,
+        defaultZoom: effectiveZoomLevel,
         fullscreenControl,
         gestureHandling: draggable ? "auto" : "none",
         mapId: props.mapId,
@@ -99,7 +116,7 @@ function GoogleMap(props: GoogleMapsProps): ReactElement {
                 {isLoaded ? (
                     <GoogleMapComponent {...mapOptions}>
                         {locations
-                            .concat(currentLocation ? [currentLocation] : [])
+                            .concat(showCurrentLocation && currentLocation ? [currentLocation] : [])
                             .filter(m => !!m)
                             .map(marker => (
                                 <GoogleMapsMarker

@@ -240,6 +240,14 @@
                         <enumerationValue key="buildings">Buildings</enumerationValue>
                     </enumerationValues>
                 </property>
+                <property key="zoomTo" type="enumeration" defaultValue="markers">
+                    <caption>Zoom to</caption>
+                    <description>Determines what the map should zoom to on load.</description>
+                    <enumerationValues>
+                        <enumerationValue key="currentLocation">Current Location</enumerationValue>
+                        <enumerationValue key="markers">Markers/Features</enumerationValue>
+                    </enumerationValues>
+                </property>
             </propertyGroup>
         </propertyGroup>
         <propertyGroup caption="Advanced">

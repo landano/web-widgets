@@ -44,6 +44,8 @@ export type HeightUnitEnum = "percentageOfWidth" | "pixels" | "percentageOfParen
 
 export type ZoomEnum = "automatic" | "world" | "continent" | "city" | "street" | "buildings";
 
+export type ZoomToEnum = "currentLocation" | "markers";
+
 export type MapProviderEnum = "googleMaps" | "openStreet" | "mapBox" | "hereMaps";
 
 export interface FeaturesType {
@@ -123,6 +125,7 @@ export interface MapsContainerProps {
     heightUnit: HeightUnitEnum;
     height: number;
     zoom: ZoomEnum;
+    zoomTo: ZoomToEnum;
     mapProvider: MapProviderEnum;
     googleMapId: string;
     features: FeaturesType[];
@@ -166,6 +169,7 @@ export interface MapsPreviewProps {
     heightUnit: HeightUnitEnum;
     height: number | null;
     zoom: ZoomEnum;
+    zoomTo: ZoomToEnum;
     mapProvider: MapProviderEnum;
     googleMapId: string;
     features: FeaturesPreviewType[];

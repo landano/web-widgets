@@ -60,6 +60,7 @@ export interface SharedProps extends Dimensions {
     autoZoom: boolean;
     optionZoomControl: boolean;
     zoomLevel: number;
+    zoomTo: "currentLocation" | "markers";
     optionDrag: boolean;
     optionScroll: boolean;
     showCurrentLocation: boolean;

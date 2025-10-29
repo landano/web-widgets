@@ -341,22 +341,36 @@ export function LeafletDrawing(props: DrawingProps): null {
             // Bind events using Leaflet Draw event constants
             const Draw = (L as any).Draw;
             if (Draw?.Event) {
-                map.on(Draw.Event.DRAWSTART, eventHandlersRef.current.onDrawStart);
-                map.on(Draw.Event.DRAWSTOP, eventHandlersRef.current.onDrawStop);
-                map.on(Draw.Event.EDITSTART, eventHandlersRef.current.onEditStart);
-                map.on(Draw.Event.EDITSTOP, eventHandlersRef.current.onEditStop);
-                map.on(Draw.Event.CREATED, eventHandlersRef.current.onDrawCreated);
-                map.on(Draw.Event.EDITED, eventHandlersRef.current.onDrawEdited);
-                map.on(Draw.Event.DELETED, eventHandlersRef.current.onDrawDeleted);
+                if (eventHandlersRef.current.onDrawStart)
+                    map.on(Draw.Event.DRAWSTART, eventHandlersRef.current.onDrawStart);
+                if (eventHandlersRef.current.onDrawStop)
+                    map.on(Draw.Event.DRAWSTOP, eventHandlersRef.current.onDrawStop);
+                if (eventHandlersRef.current.onEditStart)
+                    map.on(Draw.Event.EDITSTART, eventHandlersRef.current.onEditStart);
+                if (eventHandlersRef.current.onEditStop)
+                    map.on(Draw.Event.EDITSTOP, eventHandlersRef.current.onEditStop);
+                if (eventHandlersRef.current.onDrawCreated)
+                    map.on(Draw.Event.CREATED, eventHandlersRef.current.onDrawCreated);
+                if (eventHandlersRef.current.onDrawEdited)
+                    map.on(Draw.Event.EDITED, eventHandlersRef.current.onDrawEdited);
+                if (eventHandlersRef.current.onDrawDeleted)
+                    map.on(Draw.Event.DELETED, eventHandlersRef.current.onDrawDeleted);
             } else {
                 // Fallback to string events if constants not available
-                map.on("draw:drawstart" as any, eventHandlersRef.current.onDrawStart);
-                map.on("draw:drawstop" as any, eventHandlersRef.current.onDrawStop);
-                map.on("draw:editstart" as any, eventHandlersRef.current.onEditStart);
-                map.on("draw:editstop" as any, eventHandlersRef.current.onEditStop);
-                map.on("draw:created" as any, eventHandlersRef.current.onDrawCreated);
-                map.on("draw:edited" as any, eventHandlersRef.current.onDrawEdited);
-                map.on("draw:deleted" as any, eventHandlersRef.current.onDrawDeleted);
+                if (eventHandlersRef.current.onDrawStart)
+                    map.on("draw:drawstart" as any, eventHandlersRef.current.onDrawStart);
+                if (eventHandlersRef.current.onDrawStop)
+                    map.on("draw:drawstop" as any, eventHandlersRef.current.onDrawStop);
+                if (eventHandlersRef.current.onEditStart)
+                    map.on("draw:editstart" as any, eventHandlersRef.current.onEditStart);
+                if (eventHandlersRef.current.onEditStop)
+                    map.on("draw:editstop" as any, eventHandlersRef.current.onEditStop);
+                if (eventHandlersRef.current.onDrawCreated)
+                    map.on("draw:created" as any, eventHandlersRef.current.onDrawCreated);
+                if (eventHandlersRef.current.onDrawEdited)
+                    map.on("draw:edited" as any, eventHandlersRef.current.onDrawEdited);
+                if (eventHandlersRef.current.onDrawDeleted)
+                    map.on("draw:deleted" as any, eventHandlersRef.current.onDrawDeleted);
             }
         };
 

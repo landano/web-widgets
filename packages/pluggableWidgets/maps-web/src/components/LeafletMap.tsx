@@ -36,13 +36,27 @@ const defaultMarkerIcon = new LeafletIcon({
 });
 
 function SetBoundsComponent(
-    props: Pick<LeafletProps, "autoZoom" | "currentLocation" | "locations" | "features" | "enableDrawing">
+    props: Pick<
+        LeafletProps,
+        | "autoZoom"
+        | "currentLocation"
+        | "locations"
+        | "features"
+        | "enableDrawing"
+        | "zoomTo"
+        | "zoomLevel"
+        | "showCurrentLocation"
+    >
 ): null {
     const map = useMap();
-    const { autoZoom, currentLocation, locations, features, enableDrawing } = props;
+    const { autoZoom, currentLocation, locations, features, enableDrawing, zoomTo, zoomLevel, showCurrentLocation } =
+        props;
     const [boundsSetForDataHash, setBoundsSetForDataHash] = useState<string>("");
 
     useEffect(() => {
+        // Determine the zoom level to use (default to street level 15 if automatic)
+        const effectiveZoomLevel = autoZoom ? 15 : zoomLevel;
+
         // Special handling for drawing mode - zoom to user location at street level
         if (enableDrawing) {
             // Create a hash to prevent multiple geolocation requests
@@ -90,6 +104,29 @@ function SetBoundsComponent(
             return;
         }
 
+        // Handle zoomTo option when not in drawing mode
+        if (zoomTo === "currentLocation") {
+            // Create a hash to prevent multiple zoom operations
+            const currentLocationHash = JSON.stringify({
+                zoomTo: "currentLocation",
+                currentLocation: currentLocation ? `${currentLocation.latitude},${currentLocation.longitude}` : null,
+                effectiveZoomLevel
+            });
+
+            if (currentLocationHash === boundsSetForDataHash) {
+                return; // Already handled this zoom
+            }
+
+            if (currentLocation) {
+                console.log(`SetBoundsComponent: Zooming to current location at zoom level ${effectiveZoomLevel}`);
+                map.setView([currentLocation.latitude, currentLocation.longitude], effectiveZoomLevel);
+                setBoundsSetForDataHash(currentLocationHash);
+            } else {
+                console.log("SetBoundsComponent: Current location not available yet, waiting...");
+            }
+            return;
+        }
+
         // Check if drawing is active before proceeding
         const isDrawingActive =
             typeof window !== "undefined" &&
@@ -101,7 +138,9 @@ function SetBoundsComponent(
             return;
         }
 
-        const allLocations = locations.concat(currentLocation ? [currentLocation] : []).filter(m => !!m);
+        const allLocations = locations
+            .concat(showCurrentLocation && currentLocation ? [currentLocation] : [])
+            .filter(m => !!m);
 
         // Create a hash of current data to avoid setting bounds for the same data multiple times
         const dataHash = JSON.stringify({
@@ -177,7 +216,18 @@ function SetBoundsComponent(
         }, 200); // Slightly longer delay to allow for async data loading
 
         return () => clearTimeout(timer);
-    }, [map, enableDrawing, autoZoom, locations, currentLocation, features, boundsSetForDataHash]);
+    }, [
+        map,
+        enableDrawing,
+        autoZoom,
+        locations,
+        currentLocation,
+        features,
+        boundsSetForDataHash,
+        zoomTo,
+        zoomLevel,
+        showCurrentLocation
+    ]);
 
     return null;
 }
@@ -349,7 +399,7 @@ function GeoJSONLayer({ features }: { features: GeoJSONFeature[] }): React.React
                 };
             }}
             onEachFeature={(feature, layer) => {
-                console.log("onEachFeature called for feature:", feature);
+                console.log("onEachFeature called for feature:", feature, "onClick:", feature.properties?.onClick);
                 if (feature.properties?.onClick) {
                     layer.on("click", () => {
                         console.log("GeoJSON feature clicked:", feature);
@@ -390,8 +440,10 @@ export function LeafletMap(props: LeafletProps): ReactElement {
         mapsToken,
         optionScroll: scrollWheelZoom,
         optionZoomControl: zoomControl,
+        showCurrentLocation,
         style,
         zoomLevel: zoom,
+        zoomTo,
         optionDrag: dragging,
         features,
         enableDrawing,
@@ -424,7 +476,7 @@ export function LeafletMap(props: LeafletProps): ReactElement {
                 >
                     <TileLayer {...baseMapLayer(mapProvider, mapsToken)} />
                     {locations
-                        .concat(currentLocation ? [currentLocation] : [])
+                        .concat(showCurrentLocation && currentLocation ? [currentLocation] : [])
                         .filter(m => !!m)
                         .map(marker => (
                             <MarkerComponent
@@ -462,6 +514,9 @@ export function LeafletMap(props: LeafletProps): ReactElement {
                         locations={locations}
                         features={features}
                         enableDrawing={enableDrawing}
+                        zoomTo={zoomTo}
+                        zoomLevel={zoom}
+                        showCurrentLocation={showCurrentLocation}
                     />
                     <ExposeMapInstance />
                     <MapStabilizer />

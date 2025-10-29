@@ -21,12 +21,13 @@ export default function Maps(props: MapsContainerProps): ReactNode {
     const features = useGeoJSONResolver(props.features);
 
     useEffect(() => {
-        if (props.showCurrentLocation) {
+        // Fetch current location if needed for display or zoom
+        if (props.showCurrentLocation || props.zoomTo === "currentLocation") {
             getCurrentUserLocation()
                 .then(setCurrentLocation)
                 .catch(e => console.error(e));
         }
-    }, [props.showCurrentLocation]);
+    }, [props.showCurrentLocation, props.zoomTo]);
 
     console.log("Maps props", props);
 
@@ -54,6 +55,7 @@ export default function Maps(props: MapsContainerProps): ReactNode {
             width={props.width}
             widthUnit={props.widthUnit}
             zoomLevel={translateZoom(props.zoom)}
+            zoomTo={props.zoomTo}
             features={features}
             enableDrawing={props.enableDrawing}
             drawingTools={props.drawingTools}
