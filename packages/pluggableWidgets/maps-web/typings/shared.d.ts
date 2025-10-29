@@ -70,6 +70,7 @@ export interface SharedProps extends Dimensions {
     className?: string;
     style?: CSSProperties;
     features: GeoJSONFeature[];
+    featureHighlightColor: string;
 }
 
 export interface SharedPropsWithDrawing extends SharedProps, DrawingProps {}

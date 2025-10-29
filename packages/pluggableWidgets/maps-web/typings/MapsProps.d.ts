@@ -129,6 +129,7 @@ export interface MapsContainerProps {
     mapProvider: MapProviderEnum;
     googleMapId: string;
     features: FeaturesType[];
+    featureHighlightColor: string;
     enableDrawing: boolean;
     drawingTools: DrawingToolsEnum;
     drawnGeoJSONAttribute?: EditableValue<string>;
@@ -173,6 +174,7 @@ export interface MapsPreviewProps {
     mapProvider: MapProviderEnum;
     googleMapId: string;
     features: FeaturesPreviewType[];
+    featureHighlightColor: string;
     enableDrawing: boolean;
     drawingTools: DrawingToolsEnum;
     drawnGeoJSONAttribute: string;

@@ -333,6 +333,10 @@
                     </propertyGroup>
                 </properties>
             </property>
+            <property key="featureHighlightColor" type="string" defaultValue="#FFA500" required="false">
+                <caption>Feature highlight color</caption>
+                <description>Color used to highlight a feature when clicked (default: #FFA500 orange).</description>
+            </property>
         </propertyGroup>
         <propertyGroup caption="Drawing">
             <property key="enableDrawing" type="boolean" defaultValue="false">

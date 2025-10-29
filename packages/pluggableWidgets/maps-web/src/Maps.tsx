@@ -57,6 +57,7 @@ export default function Maps(props: MapsContainerProps): ReactNode {
             zoomLevel={translateZoom(props.zoom)}
             zoomTo={props.zoomTo}
             features={features}
+            featureHighlightColor={props.featureHighlightColor}
             enableDrawing={props.enableDrawing}
             drawingTools={props.drawingTools}
             drawnGeoJSONAttribute={props.drawnGeoJSONAttribute}

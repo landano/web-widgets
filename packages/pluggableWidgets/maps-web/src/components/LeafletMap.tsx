@@ -1,11 +1,11 @@
-import { createElement, ReactElement, useEffect, useState } from "react";
+import { createElement, ReactElement, useEffect, useRef, useState } from "react";
 import { FeatureCollection } from "geojson";
 import { GeoJSON, MapContainer, Marker as MarkerComponent, Popup, TileLayer, useMap } from "react-leaflet";
 import classNames from "classnames";
 import { getDimensions } from "@mendix/widget-plugin-platform/utils/get-dimensions";
 import { GeoJSONFeature, SharedPropsWithDrawing } from "../../typings/shared";
 import { MapProviderEnum } from "../../typings/MapsProps";
-import { DivIcon, geoJSON, latLngBounds, Icon as LeafletIcon, LatLngBounds } from "leaflet";
+import { DivIcon, geoJSON, latLngBounds, Icon as LeafletIcon, LatLngBounds, DomEvent } from "leaflet";
 import { baseMapLayer, getMaxZoomForProvider } from "../utils/leaflet";
 import { LeafletDrawing } from "./LeafletDrawing";
 import "leaflet/dist/leaflet.css";
@@ -323,7 +323,74 @@ function MapStabilizer(): null {
     return null;
 }
 
-function GeoJSONLayer({ features }: { features: GeoJSONFeature[] }): React.ReactElement | null {
+function GeoJSONLayer({
+    features,
+    featureHighlightColor
+}: {
+    features: GeoJSONFeature[];
+    featureHighlightColor: string;
+}): React.ReactElement | null {
+    const map = useMap();
+    const highlightedFeatureIdRef = useRef<string | null>(null);
+    const geoJSONLayerRef = useRef<any>(null);
+
+    // Apply highlighting function
+    const applyHighlight = (featureId: string | null) => {
+        console.log("Applying highlight to:", featureId);
+        if (geoJSONLayerRef.current) {
+            geoJSONLayerRef.current.setStyle((feature: any) => {
+                const props = feature?.properties || {};
+                const isHighlighted = props.featureId === featureId;
+
+                if (isHighlighted) {
+                    console.log("Highlighting feature:", props.featureId);
+                    return {
+                        stroke: props.stroke !== false,
+                        color: featureHighlightColor,
+                        weight: (props.weight || 3) + 2,
+                        opacity: Math.min((props.opacity || 1) + 0.2, 1),
+                        fill: props.fill !== false,
+                        fillColor: featureHighlightColor,
+                        fillOpacity: Math.min((props.fillOpacity || 0.2) + 0.2, 0.6)
+                    };
+                }
+
+                return {
+                    stroke: props.stroke !== false,
+                    color: props.color || "#3388ff",
+                    weight: props.weight !== undefined ? props.weight : 3,
+                    opacity: props.opacity !== undefined ? props.opacity : 1.0,
+                    fill: props.fill !== false,
+                    fillColor: props.fillColor || props.color || "#3388ff",
+                    fillOpacity: props.fillOpacity !== undefined ? props.fillOpacity : 0.2
+                };
+            });
+        }
+    };
+
+    // Reapply highlight after layer is created/recreated
+    useEffect(() => {
+        if (geoJSONLayerRef.current && highlightedFeatureIdRef.current) {
+            console.log("Layer recreated, reapplying highlight:", highlightedFeatureIdRef.current);
+            applyHighlight(highlightedFeatureIdRef.current);
+        }
+    });
+
+    // Clear highlight when clicking on the map background
+    useEffect(() => {
+        const handleMapClick = () => {
+            console.log("Map background clicked, clearing highlight");
+            highlightedFeatureIdRef.current = null;
+            applyHighlight(null);
+        };
+
+        map.on("click", handleMapClick);
+
+        return () => {
+            map.off("click", handleMapClick);
+        };
+    }, [map]);
+
     if (!features || features.length === 0) {
         return null;
     }
@@ -348,7 +415,7 @@ function GeoJSONLayer({ features }: { features: GeoJSONFeature[] }): React.React
 
     const geoJSONData: FeatureCollection = {
         type: "FeatureCollection",
-        features: features.map(feature => {
+        features: features.map((feature, index) => {
             const parsedGeoJSON = JSON.parse(feature.geoJSON); // Parse the full GeoJSON feature
 
             console.log("Feature:", feature);
@@ -357,6 +424,7 @@ function GeoJSONLayer({ features }: { features: GeoJSONFeature[] }): React.React
                 ...parsedGeoJSON, // Use the parsed Feature as the base
                 properties: {
                     ...parsedGeoJSON.properties, // Keep existing properties
+                    featureId: `feature-${index}`, // Unique ID for highlighting
                     color: feature.color ?? "#3388ff",
                     stroke: feature.stroke ?? true,
                     weight: feature.weight ?? 3,
@@ -372,6 +440,7 @@ function GeoJSONLayer({ features }: { features: GeoJSONFeature[] }): React.React
 
     return (
         <GeoJSON
+            ref={geoJSONLayerRef}
             data={geoJSONData}
             style={feature => {
                 // Apply styles from feature properties
@@ -400,9 +469,33 @@ function GeoJSONLayer({ features }: { features: GeoJSONFeature[] }): React.React
             }}
             onEachFeature={(feature, layer) => {
                 console.log("onEachFeature called for feature:", feature, "onClick:", feature.properties?.onClick);
-                if (feature.properties?.onClick) {
-                    layer.on("click", () => {
-                        console.log("GeoJSON feature clicked:", feature);
+
+                layer.on("click", e => {
+                    // Stop propagation to prevent map click handler from firing
+                    DomEvent.stopPropagation(e);
+
+                    console.log("GeoJSON feature clicked, featureId:", feature.properties?.featureId);
+
+                    // Handle highlighting - toggle if clicking the same feature
+                    const featureId = feature.properties?.featureId;
+                    console.log(
+                        "Current highlightedFeatureId:",
+                        highlightedFeatureIdRef.current,
+                        "Clicked featureId:",
+                        featureId
+                    );
+                    if (highlightedFeatureIdRef.current === featureId) {
+                        console.log("Toggling off highlight");
+                        highlightedFeatureIdRef.current = null;
+                        applyHighlight(null);
+                    } else {
+                        console.log("Setting highlight to:", featureId);
+                        highlightedFeatureIdRef.current = featureId || null;
+                        applyHighlight(featureId || null);
+                    }
+
+                    // Execute onClick action if present
+                    if (feature.properties?.onClick) {
                         try {
                             const action = feature.properties.onClick;
                             // Check if it's a function (already bound action) or an object with execute method
@@ -421,8 +514,8 @@ function GeoJSONLayer({ features }: { features: GeoJSONFeature[] }): React.React
                         } catch (error) {
                             console.error("GeoJSON onClick: Error executing action", error);
                         }
-                    });
-                }
+                    }
+                });
             }}
         />
     );
@@ -446,6 +539,7 @@ export function LeafletMap(props: LeafletProps): ReactElement {
         zoomTo,
         optionDrag: dragging,
         features,
+        featureHighlightColor,
         enableDrawing,
         drawingTools,
         drawnGeoJSONAttribute,
@@ -520,7 +614,7 @@ export function LeafletMap(props: LeafletProps): ReactElement {
                     />
                     <ExposeMapInstance />
                     <MapStabilizer />
-                    {features && <GeoJSONLayer features={features} />}
+                    {features && <GeoJSONLayer features={features} featureHighlightColor={featureHighlightColor} />}
                     {enableDrawing && (
                         <LeafletDrawing
                             enableDrawing={enableDrawing}
