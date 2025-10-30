@@ -22,10 +22,15 @@ export default function Maps(props: MapsContainerProps): ReactNode {
 
     useEffect(() => {
         // Fetch current location if needed for display or zoom
+        console.log("Maps useEffect - showCurrentLocation:", props.showCurrentLocation, "zoomTo:", props.zoomTo);
         if (props.showCurrentLocation || props.zoomTo === "currentLocation") {
+            console.log("Fetching current user location...");
             getCurrentUserLocation()
-                .then(setCurrentLocation)
-                .catch(e => console.error(e));
+                .then(loc => {
+                    console.log("Got current location:", loc);
+                    setCurrentLocation(loc);
+                })
+                .catch(e => console.error("Error getting current location:", e));
         }
     }, [props.showCurrentLocation, props.zoomTo]);
 

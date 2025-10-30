@@ -54,6 +54,15 @@ function SetBoundsComponent(
     const [boundsSetForDataHash, setBoundsSetForDataHash] = useState<string>("");
 
     useEffect(() => {
+        console.log(
+            "SetBoundsComponent useEffect - zoomTo:",
+            zoomTo,
+            "currentLocation:",
+            currentLocation,
+            "autoZoom:",
+            autoZoom
+        );
+
         // Determine the zoom level to use (default to street level 15 if automatic)
         const effectiveZoomLevel = autoZoom ? 15 : zoomLevel;
 
