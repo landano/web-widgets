@@ -22,7 +22,40 @@
 .widget-maps {
     position: relative;
     min-height: 350px;
+    height: 350px; /* Explicit height as fallback */
+
+    /* Ensure the widget has dimensions even when no explicit size is set */
+    &:not([style*="height"]) {
+        height: 350px !important;
+    }
+
+    /* Handle cases where getDimensions returns height: auto or 0 */
+    &[style*="height: auto"],
+    &[style*="height: 0"] {
+        height: 350px !important;
+    }
+
+    /* Handle "percentage of width" layout (padding-bottom trick) */
+    &[style*="padding-bottom"] {
+        height: auto !important; /* Let padding-bottom control height */
+
+        .widget-leaflet-maps-wrapper {
+            /* Position absolutely to fill the space created by padding-bottom */
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+        }
+    }
 }
+
+/**
+ * When explicit dimensions are provided via getDimensions(props), 
+ * the inline styles will override this default height
+ */
 
 .widget-google-maps {
     width: 100%;
@@ -44,6 +77,8 @@ Leaflet maps
     right: 0;
     position: absolute;
     z-index: 1;
+    width: 100%;
+    height: 100%;
 }
 
 .widget-leaflet-maps-alert.leaflet-control {
@@ -53,8 +88,9 @@ Leaflet maps
 }
 
 .custom-leaflet-map-icon-marker {
-    /* Let Leaflet handle the positioning naturally */
-    /* The size and anchor are now set in the DivIcon configuration */
+    /* Leaflet handles the positioning naturally */
+    /* The size and anchor are set in the DivIcon configuration */
+    position: relative;
 }
 
 .custom-leaflet-map-icon-marker-icon {

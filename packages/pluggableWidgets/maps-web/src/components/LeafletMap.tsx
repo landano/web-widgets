@@ -1,4 +1,4 @@
-import { createElement, ReactElement, useEffect, useRef, useState } from "react";
+import { createElement, ReactElement, useCallback, useEffect, useRef, useState } from "react";
 import { FeatureCollection } from "geojson";
 import { GeoJSON, MapContainer, Marker as MarkerComponent, Popup, TileLayer, useMap } from "react-leaflet";
 import classNames from "classnames";
@@ -53,6 +53,12 @@ function SetBoundsComponent(
         props;
     const [boundsSetForDataHash, setBoundsSetForDataHash] = useState<string>("");
 
+    // Simple container check - no complex retry logic needed anymore
+    const isMapReady = useCallback((): boolean => {
+        const container = map.getContainer();
+        return container && container.offsetWidth > 0 && container.offsetHeight > 0;
+    }, [map]);
+
     useEffect(() => {
         console.log(
             "SetBoundsComponent useEffect - zoomTo:",
@@ -63,6 +69,16 @@ function SetBoundsComponent(
             autoZoom
         );
 
+        // Wait for map to be ready before proceeding
+        if (!isMapReady()) {
+            console.log("SetBoundsComponent: Map container not ready, waiting...");
+            const readyTimer = setTimeout(() => {
+                // Trigger re-evaluation after a delay
+                setBoundsSetForDataHash("");
+            }, 100);
+            return () => clearTimeout(readyTimer);
+        }
+
         // Determine the zoom level to use (default to street level 15 if automatic)
         const effectiveZoomLevel = autoZoom ? 15 : zoomLevel;
 
@@ -71,7 +87,8 @@ function SetBoundsComponent(
             // Create a hash to prevent multiple geolocation requests
             const drawingDataHash = JSON.stringify({
                 enableDrawing: true,
-                autoZoom
+                autoZoom,
+                mapReady: isMapReady()
             });
 
             if (drawingDataHash === boundsSetForDataHash) {
@@ -89,15 +106,20 @@ function SetBoundsComponent(
                             `SetBoundsComponent: Got user location: ${userLat}, ${userLng} - zooming to street level`
                         );
 
-                        // Zoom to user location at street level (zoom 16-17 is good for drawing)
-                        map.setView([userLat, userLng], 16);
-                        setBoundsSetForDataHash(drawingDataHash);
+                        // Ensure map is still ready before setting view
+                        if (isMapReady()) {
+                            // Zoom to user location at street level (zoom 16-17 is good for drawing)
+                            map.setView([userLat, userLng], 16);
+                            setBoundsSetForDataHash(drawingDataHash);
+                        }
                     },
                     error => {
                         console.debug("SetBoundsComponent: Failed to get user location:", error.message);
                         // Fallback: set a reasonable zoom level at current map center
-                        map.setZoom(16);
-                        setBoundsSetForDataHash(drawingDataHash);
+                        if (isMapReady()) {
+                            map.setZoom(16);
+                            setBoundsSetForDataHash(drawingDataHash);
+                        }
                     },
                     {
                         enableHighAccuracy: true,
@@ -107,8 +129,10 @@ function SetBoundsComponent(
                 );
             } else {
                 console.warn("SetBoundsComponent: Geolocation not supported - using default zoom");
-                map.setZoom(16);
-                setBoundsSetForDataHash(drawingDataHash);
+                if (isMapReady()) {
+                    map.setZoom(16);
+                    setBoundsSetForDataHash(drawingDataHash);
+                }
             }
             return;
         }
@@ -119,14 +143,15 @@ function SetBoundsComponent(
             const currentLocationHash = JSON.stringify({
                 zoomTo: "currentLocation",
                 currentLocation: currentLocation ? `${currentLocation.latitude},${currentLocation.longitude}` : null,
-                effectiveZoomLevel
+                effectiveZoomLevel,
+                mapReady: isMapReady()
             });
 
             if (currentLocationHash === boundsSetForDataHash) {
                 return; // Already handled this zoom
             }
 
-            if (currentLocation) {
+            if (currentLocation && isMapReady()) {
                 console.log(`SetBoundsComponent: Zooming to current location at zoom level ${effectiveZoomLevel}`);
                 map.setView([currentLocation.latitude, currentLocation.longitude], effectiveZoomLevel);
                 setBoundsSetForDataHash(currentLocationHash);
@@ -156,7 +181,8 @@ function SetBoundsComponent(
             locationCount: allLocations.length,
             locations: allLocations.map(l => `${l.latitude},${l.longitude}`),
             featureCount: features?.length || 0,
-            autoZoom
+            autoZoom,
+            mapReady: isMapReady()
         });
 
         // If we've already set bounds for this exact data, skip
@@ -176,6 +202,12 @@ function SetBoundsComponent(
 
         // Wait a bit for the map to be fully ready, then set bounds
         const timer = setTimeout(() => {
+            // Double-check map readiness
+            if (!isMapReady()) {
+                console.log("SetBoundsComponent: Map not ready during bounds setting, skipping");
+                return;
+            }
+
             let bounds: LatLngBounds | null = null;
 
             // Create bounds from locations if available
@@ -235,7 +267,8 @@ function SetBoundsComponent(
         boundsSetForDataHash,
         zoomTo,
         zoomLevel,
-        showCurrentLocation
+        showCurrentLocation,
+        isMapReady
     ]);
 
     return null;
@@ -254,75 +287,106 @@ function ExposeMapInstance(): null {
     return null;
 }
 
-function MapStabilizer(): null {
+function MapInitializer(): null {
     const map = useMap();
 
     useEffect(() => {
-        // Initial map stabilization after mount
-        const initialTimer = setTimeout(() => {
+        console.log("MapInitializer: Initializing map after React mount");
+
+        // Single initialization after React has fully mounted
+        const initTimer = setTimeout(() => {
             try {
-                // Check if map container and its parent are properly initialized
                 const container = map.getContainer();
-                if (container && container.parentElement && container.offsetWidth > 0 && container.offsetHeight > 0) {
-                    console.log("MapStabilizer: Initial map invalidateSize");
+                console.log("MapInitializer: Container dimensions:", {
+                    offsetWidth: container.offsetWidth,
+                    offsetHeight: container.offsetHeight,
+                    clientWidth: container.clientWidth,
+                    clientHeight: container.clientHeight
+                });
+
+                if (container.offsetWidth > 0 && container.offsetHeight > 0) {
+                    console.log("MapInitializer: Container has dimensions, calling invalidateSize");
                     map.invalidateSize(true);
                 } else {
-                    console.log("MapStabilizer: Container not ready, skipping initial invalidateSize");
+                    console.warn("MapInitializer: Container has no dimensions - checking layout");
+
+                    // Check if we're in a "percentage of width" layout
+                    const parentWrapper = container.parentElement;
+                    if (parentWrapper && parentWrapper.parentElement) {
+                        const widgetContainer = parentWrapper.parentElement;
+                        const computedStyle = window.getComputedStyle(widgetContainer);
+
+                        console.log("MapInitializer: Widget container layout:", {
+                            width: computedStyle.width,
+                            height: computedStyle.height,
+                            paddingBottom: computedStyle.paddingBottom,
+                            display: computedStyle.display,
+                            position: computedStyle.position
+                        });
+
+                        // Check if container is using padding-bottom trick (percentage of width)
+                        const hasPaddingBottom = computedStyle.paddingBottom && computedStyle.paddingBottom !== "0px";
+
+                        if (hasPaddingBottom) {
+                            console.log(
+                                "MapInitializer: Detected padding-bottom layout - ensuring wrapper has proper height"
+                            );
+
+                            // For padding-bottom layouts, the wrapper needs to expand to fill the space
+                            parentWrapper.style.position = "absolute";
+                            parentWrapper.style.top = "0";
+                            parentWrapper.style.left = "0";
+                            parentWrapper.style.right = "0";
+                            parentWrapper.style.bottom = "0";
+
+                            // Also ensure the container fills the wrapper
+                            container.style.width = "100%";
+                            container.style.height = "100%";
+
+                            // Retry after layout fix
+                            setTimeout(() => {
+                                console.log("MapInitializer: Retrying after padding-bottom layout fix");
+                                map.invalidateSize(true);
+                            }, 100);
+                        } else {
+                            // Regular layout without padding-bottom
+                            console.log("MapInitializer: Regular layout - setting explicit height");
+                            widgetContainer.style.height = "350px";
+
+                            setTimeout(() => {
+                                console.log("MapInitializer: Retrying after height fix");
+                                map.invalidateSize(true);
+                            }, 100);
+                        }
+                    }
                 }
             } catch (error) {
-                console.warn("MapStabilizer: Error during initial invalidateSize:", error);
+                console.warn("MapInitializer: Error during initialization:", error);
             }
-        }, 300); // Increased delay to ensure container is ready
+        }, 100);
 
-        // Set up ResizeObserver to handle container changes
+        // Simple resize observer for actual container size changes
         let resizeObserver: ResizeObserver | null = null;
 
         if (typeof window !== "undefined" && window.ResizeObserver) {
             const container = map.getContainer();
             if (container) {
-                resizeObserver = new ResizeObserver(entries => {
-                    // Check if drawing is active before invalidating size
-                    const isDrawingActive =
-                        typeof window !== "undefined" &&
-                        (window as any).isLeafletDrawingActive &&
-                        (window as any).isLeafletDrawingActive();
-
-                    if (isDrawingActive) {
-                        console.log("MapStabilizer: Skipping invalidateSize - drawing is active");
-                        return;
-                    }
-
-                    for (const entry of entries) {
-                        if (entry.target === container) {
-                            console.log("MapStabilizer: Container resized, calling invalidateSize");
-                            // Debounce resize calls
-                            setTimeout(() => {
-                                try {
-                                    // Additional safety check before invalidating
-                                    if (
-                                        !(
-                                            (window as any).isLeafletDrawingActive &&
-                                            (window as any).isLeafletDrawingActive()
-                                        ) &&
-                                        container.offsetWidth > 0 &&
-                                        container.offsetHeight > 0
-                                    ) {
-                                        map.invalidateSize(true);
-                                    }
-                                } catch (error) {
-                                    console.warn("MapStabilizer: Error during resize invalidateSize:", error);
-                                }
-                            }, 100); // Increased delay
+                resizeObserver = new ResizeObserver(() => {
+                    setTimeout(() => {
+                        try {
+                            map.invalidateSize(true);
+                            console.log("MapInitializer: Handled resize event");
+                        } catch (error) {
+                            console.warn("MapInitializer: Error during resize:", error);
                         }
-                    }
+                    }, 50);
                 });
-
                 resizeObserver.observe(container);
             }
         }
 
         return () => {
-            clearTimeout(initialTimer);
+            clearTimeout(initTimer);
             if (resizeObserver) {
                 resizeObserver.disconnect();
             }
@@ -562,8 +626,54 @@ export function LeafletMap(props: LeafletProps): ReactElement {
     console.log(`LeafletMap: Using maxZoom ${maxZoom} for provider ${mapProvider}`);
     console.log("[LeafletMap] Features: ", features);
 
+    // Debug dimensions
+    const dimensions = getDimensions(props);
+    console.log("LeafletMap: getDimensions result:", dimensions);
+    console.log("LeafletMap: style prop:", style);
+    console.log("LeafletMap: width/height props:", {
+        width: props.width,
+        widthUnit: props.widthUnit,
+        height: props.height,
+        heightUnit: props.heightUnit
+    });
+
+    // Handle Mendix dimension system properly
+    const ensuredDimensions = { ...dimensions };
+
+    // Check if height unit is "percentage of width" (which uses padding-bottom trick)
+    const isPercentageOfWidth = props.heightUnit === "percentageOfWidth";
+
+    if (isPercentageOfWidth) {
+        console.log("LeafletMap: Detected 'percentage of width' height unit - converting to explicit height");
+
+        // For "percentage of width", Mendix uses padding-bottom trick
+        // But Leaflet needs explicit height, so we convert it
+        const paddingValue = ensuredDimensions.paddingBottom;
+
+        if (paddingValue) {
+            // Keep the padding-bottom for layout, but also set explicit height
+            // This allows the aspect ratio to work while giving Leaflet a real height
+            ensuredDimensions.height = "100%";
+            ensuredDimensions.minHeight = "200px"; // Minimum reasonable height
+
+            console.log("LeafletMap: Converted percentage-of-width to hybrid layout:", {
+                paddingBottom: paddingValue,
+                height: ensuredDimensions.height,
+                minHeight: ensuredDimensions.minHeight
+            });
+        }
+    } else {
+        // For other height units, ensure we have a reasonable height
+        if (!ensuredDimensions.height || ensuredDimensions.height === "auto" || ensuredDimensions.height === 0) {
+            ensuredDimensions.height = "350px";
+            ensuredDimensions.minHeight = "350px";
+        }
+    }
+
+    console.log("LeafletMap: Final dimensions:", ensuredDimensions);
+
     return (
-        <div className={classNames("widget-maps", className)} style={{ ...style, ...getDimensions(props) }}>
+        <div className={classNames("widget-maps", className)} style={{ ...style, ...ensuredDimensions }}>
             <div className="widget-leaflet-maps-wrapper">
                 <MapContainer
                     attributionControl={attributionControl}
@@ -575,7 +685,9 @@ export function LeafletMap(props: LeafletProps): ReactElement {
                     scrollWheelZoom={scrollWheelZoom}
                     zoom={zoom}
                     zoomControl={zoomControl}
-                    whenReady={() => {}}
+                    whenReady={() => {
+                        console.log("MapContainer: Map is ready");
+                    }}
                 >
                     <TileLayer {...baseMapLayer(mapProvider, mapsToken)} />
                     {locations
@@ -622,7 +734,7 @@ export function LeafletMap(props: LeafletProps): ReactElement {
                         showCurrentLocation={showCurrentLocation}
                     />
                     <ExposeMapInstance />
-                    <MapStabilizer />
+                    <MapInitializer />
                     {features && <GeoJSONLayer features={features} featureHighlightColor={featureHighlightColor} />}
                     {enableDrawing && (
                         <LeafletDrawing

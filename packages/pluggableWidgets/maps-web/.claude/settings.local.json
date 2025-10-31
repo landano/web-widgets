@@ -25,7 +25,13 @@
             "Bash(git checkout:*)",
             "Bash(cat:*)",
             "WebFetch(domain:stackoverflow.com)",
-            "WebFetch(domain:leafletjs.com)"
+            "WebFetch(domain:leafletjs.com)",
+            "Bash(git restore:*)",
+            "Bash(git reset:*)",
+            "Bash(pnpm format:*)",
+            "Bash(pnpm dev:*)",
+            "Bash(node:*)",
+            "Bash(npx tsc:*)"
         ],
         "deny": [],
         "ask": []
