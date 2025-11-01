@@ -55,8 +55,10 @@ function GoogleMap(props: GoogleMapsProps): ReactElement {
         zoomTo
     } = props;
 
-    // Determine the zoom level to use (default to street level 15 if automatic)
-    const effectiveZoomLevel = autoZoom ? 15 : zoomLevel;
+    // Determine the zoom level to use
+    // For currentLocation zoom, always use the user-specified zoomLevel
+    // autoZoom only affects bounds fitting for markers/features, not currentLocation zoom
+    const effectiveZoomLevel = zoomLevel;
 
     useEffect(() => {
         if (map) {

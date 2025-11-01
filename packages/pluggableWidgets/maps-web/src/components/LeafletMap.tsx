@@ -331,16 +331,11 @@ function SetBoundsComponent(
         }
 
         // Determine the zoom level to use
+        // When zoom is "automatic" (autoZoom=true), use 15 for current location
+        // When zoom is specific level (autoZoom=false), use the user-specified zoomLevel
         const effectiveZoomLevel = autoZoom ? 15 : zoomLevel;
 
-        // For drawing mode, we'll let the IntegratedDrawingManager handle location coordination
-        // This should prevent the Washington DC fallback issues by ensuring better timing
-        if (enableDrawing) {
-            console.log("SetBoundsComponent: Drawing mode enabled - skipping separate location handling");
-            return; // Let IntegratedDrawingManager handle location coordination
-        }
-
-        // Handle zoomTo option when not in drawing mode
+        // Handle zoomTo option first, even if drawing is enabled
         if (zoomTo === "currentLocation") {
             // Create a hash to prevent multiple zoom operations
             const currentLocationHash = JSON.stringify({
@@ -354,14 +349,29 @@ function SetBoundsComponent(
                 return; // Already handled this zoom
             }
 
-            if (currentLocation && isMapReady()) {
-                console.log(`SetBoundsComponent: Zooming to current location at zoom level ${effectiveZoomLevel}`);
+            // Validate current location before using it
+            if (
+                currentLocation &&
+                isMapReady() &&
+                typeof currentLocation.latitude === "number" &&
+                typeof currentLocation.longitude === "number" &&
+                !isNaN(currentLocation.latitude) &&
+                !isNaN(currentLocation.longitude) &&
+                currentLocation.latitude >= -90 &&
+                currentLocation.latitude <= 90 &&
+                currentLocation.longitude >= -180 &&
+                currentLocation.longitude <= 180
+            ) {
                 map.setView([currentLocation.latitude, currentLocation.longitude], effectiveZoomLevel);
                 setBoundsSetForDataHash(currentLocationHash);
-            } else {
-                console.log("SetBoundsComponent: Current location not available yet, waiting...");
             }
             return;
+        }
+
+        // For drawing mode, we'll let the IntegratedDrawingManager handle other location coordination
+        // This should prevent the Washington DC fallback issues by ensuring better timing
+        if (enableDrawing) {
+            return; // Let IntegratedDrawingManager handle marker/feature location coordination
         }
 
         // Check if drawing is active before proceeding
