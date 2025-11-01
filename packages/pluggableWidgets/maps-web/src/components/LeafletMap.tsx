@@ -7,7 +7,16 @@ import { GeoJSONFeature, SharedPropsWithDrawing } from "../../typings/shared";
 import { MapProviderEnum } from "../../typings/MapsProps";
 import { DivIcon, geoJSON, latLngBounds, Icon as LeafletIcon, LatLngBounds, DomEvent } from "leaflet";
 import { baseMapLayer, getMaxZoomForProvider } from "../utils/leaflet";
-import { LeafletDrawing } from "./LeafletDrawing";
+import { executeAction } from "@mendix/widget-plugin-platform/framework/execute-action";
+import {
+    createLayersFromGeoJSON,
+    getFeatureGroupLayers,
+    layersToFeatureCollection,
+    layerToGeoJSON
+} from "../utils/drawing";
+// Import leaflet-draw to extend Leaflet with drawing capabilities
+import "leaflet-draw";
+import * as L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
 
@@ -34,6 +43,248 @@ const defaultMarkerIcon = new LeafletIcon({
     iconSize: [25, 41],
     iconAnchor: [12, 41]
 });
+
+// Integrated Drawing Manager Component
+function IntegratedDrawingManager(
+    props: Pick<
+        LeafletProps,
+        "enableDrawing" | "drawingTools" | "drawnGeoJSONAttribute" | "onDrawComplete" | "allowEdit" | "allowDelete"
+    >
+): null {
+    const map = useMap();
+    const drawnItemsRef = useRef<L.FeatureGroup>();
+    const drawControlRef = useRef<any>();
+    const isDrawingActiveRef = useRef<boolean>(false);
+    const isEditingActiveRef = useRef<boolean>(false);
+
+    const { enableDrawing, drawingTools, drawnGeoJSONAttribute, onDrawComplete, allowEdit, allowDelete } = props;
+
+    // Create stable callback functions
+    const saveDrawnItems = useCallback(() => {
+        if (!drawnItemsRef.current || !drawnGeoJSONAttribute || drawnGeoJSONAttribute.readOnly) {
+            console.warn("SaveDrawnItems: Cannot save - missing requirements");
+            return;
+        }
+
+        try {
+            const layers = getFeatureGroupLayers(drawnItemsRef.current!);
+            console.log(`SaveDrawnItems: Found ${layers.length} layers`);
+
+            if (layers.length === 0) {
+                drawnGeoJSONAttribute.setValue("");
+                console.log("SaveDrawnItems: Cleared attribute - no drawings");
+                return;
+            }
+
+            const result = layersToFeatureCollection(layers);
+            if (result.success && result.featureCollection) {
+                const geoJSONString = JSON.stringify(result.featureCollection);
+                drawnGeoJSONAttribute.setValue(geoJSONString);
+                console.log(`SaveDrawnItems: Successfully saved ${layers.length} drawings to attribute`);
+            } else {
+                console.error(`Failed to convert drawings to GeoJSON: ${result.error}`);
+            }
+        } catch (error) {
+            console.error("SaveDrawnItems: Error:", error);
+        }
+    }, [drawnGeoJSONAttribute]);
+
+    const loadExistingDrawings = useCallback(() => {
+        if (!drawnItemsRef.current) {
+            console.warn("LoadExistingDrawings: No drawn items ref available");
+            return;
+        }
+
+        if (!drawnGeoJSONAttribute?.value || drawnGeoJSONAttribute.value.trim() === "") {
+            console.log("LoadExistingDrawings: No existing drawings to load");
+            return;
+        }
+
+        try {
+            console.log("LoadExistingDrawings: Loading from attribute...");
+            drawnItemsRef.current.clearLayers();
+
+            const result = createLayersFromGeoJSON(drawnGeoJSONAttribute.value);
+            if (result.success && result.layers.length > 0) {
+                result.layers.forEach(layer => {
+                    if (drawnItemsRef.current && layer) {
+                        drawnItemsRef.current.addLayer(layer);
+                    }
+                });
+                console.log(`LoadExistingDrawings: Successfully loaded ${result.layers.length} drawings`);
+            } else {
+                console.warn("LoadExistingDrawings: Failed to create layers:", result.error);
+            }
+        } catch (error) {
+            console.error("LoadExistingDrawings: Unexpected error:", error);
+            if (drawnItemsRef.current) {
+                drawnItemsRef.current.clearLayers();
+            }
+        }
+    }, [drawnGeoJSONAttribute]);
+
+    useEffect(() => {
+        if (!enableDrawing || !map) {
+            return;
+        }
+
+        console.log("IntegratedDrawingManager: Initializing drawing functionality - coordinated with map lifecycle");
+
+        // Wait for map to be ready then initialize controls
+        const initializeDrawingControls = () => {
+            try {
+                console.log("IntegratedDrawingManager: Initializing drawing controls");
+
+                // Initialize drawn items feature group
+                const drawnItems = new L.FeatureGroup();
+                map.addLayer(drawnItems);
+                drawnItemsRef.current = drawnItems;
+
+                // Configure drawing options
+                const drawOptions =
+                    drawingTools === "all"
+                        ? {
+                              polygon: {
+                                  allowIntersection: false,
+                                  showArea: false,
+                                  shapeOptions: { color: "#2E7D32", fillColor: "#81C784", fillOpacity: 0.3, weight: 3 }
+                              },
+                              rectangle: {
+                                  shapeOptions: { color: "#1565C0", fillColor: "#42A5F5", fillOpacity: 0.3, weight: 3 }
+                              },
+                              polyline: { shapeOptions: { color: "#E91E63", weight: 4 } },
+                              circle: {
+                                  shapeOptions: { color: "#7B1FA2", fillColor: "#BA68C8", fillOpacity: 0.3, weight: 3 }
+                              },
+                              circlemarker: false,
+                              marker: true
+                          }
+                        : {
+                              polygon: {
+                                  allowIntersection: false,
+                                  showArea: false,
+                                  shapeOptions: { color: "#2E7D32", fillColor: "#81C784", fillOpacity: 0.3, weight: 3 }
+                              },
+                              rectangle: false,
+                              polyline: false,
+                              circle: false,
+                              circlemarker: false,
+                              marker: false
+                          };
+
+                // Initialize draw control
+                const DrawControl = (L.Control as any).Draw;
+                if (!DrawControl) {
+                    console.error("Leaflet Draw control not loaded");
+                    return;
+                }
+
+                const drawControl = new DrawControl({
+                    position: "topright",
+                    draw: drawOptions,
+                    edit: {
+                        featureGroup: drawnItems,
+                        edit: allowEdit !== false ? {} : false,
+                        remove: allowDelete !== false ? {} : false
+                    }
+                });
+
+                map.addControl(drawControl);
+                drawControlRef.current = drawControl;
+
+                // Load existing drawings
+                loadExistingDrawings();
+
+                // Event handlers
+                const onDrawCreated = (e: any): void => {
+                    try {
+                        const layer = e.layer;
+                        if (!layer) {
+                            console.error("No layer found in draw:created event");
+                            return;
+                        }
+
+                        if (drawnItemsRef.current) {
+                            drawnItemsRef.current.addLayer(layer);
+                        }
+
+                        saveDrawnItems();
+
+                        if (onDrawComplete) {
+                            executeAction(onDrawComplete);
+                        }
+
+                        console.log("Drawing created:", layerToGeoJSON(layer));
+                    } catch (error) {
+                        console.error("Error handling draw:created event:", error);
+                    }
+                };
+
+                const onDrawEdited = (_e: any): void => {
+                    saveDrawnItems();
+                    console.log("Drawing edited");
+                };
+
+                const onDrawDeleted = (_e: any): void => {
+                    saveDrawnItems();
+                    console.log("Drawing deleted");
+                };
+
+                // Bind events
+                const Draw = (L as any).Draw;
+                if (Draw?.Event) {
+                    map.on(Draw.Event.CREATED, onDrawCreated);
+                    map.on(Draw.Event.EDITED, onDrawEdited);
+                    map.on(Draw.Event.DELETED, onDrawDeleted);
+                } else {
+                    map.on("draw:created" as any, onDrawCreated);
+                    map.on("draw:edited" as any, onDrawEdited);
+                    map.on("draw:deleted" as any, onDrawDeleted);
+                }
+
+                console.log("IntegratedDrawingManager: Drawing controls initialized successfully");
+            } catch (error) {
+                console.error("IntegratedDrawingManager: Error during initialization:", error);
+            }
+        };
+
+        // Initialize after a small delay to ensure map is stable
+        const timer = setTimeout(initializeDrawingControls, 300);
+
+        // Cleanup function
+        return () => {
+            clearTimeout(timer);
+
+            if (drawControlRef.current) {
+                map.removeControl(drawControlRef.current);
+            }
+            if (drawnItemsRef.current) {
+                map.removeLayer(drawnItemsRef.current);
+            }
+
+            isDrawingActiveRef.current = false;
+            isEditingActiveRef.current = false;
+        };
+    }, [
+        enableDrawing,
+        map,
+        drawingTools,
+        allowEdit,
+        allowDelete,
+        onDrawComplete,
+        saveDrawnItems,
+        loadExistingDrawings
+    ]);
+
+    // Update existing drawings when attribute value changes
+    useEffect(() => {
+        if (enableDrawing && drawnItemsRef.current && drawnGeoJSONAttribute?.value) {
+            loadExistingDrawings();
+        }
+    }, [enableDrawing, drawnGeoJSONAttribute?.value, loadExistingDrawings]);
+
+    return null;
+}
 
 function SetBoundsComponent(
     props: Pick<
@@ -79,62 +330,14 @@ function SetBoundsComponent(
             return () => clearTimeout(readyTimer);
         }
 
-        // Determine the zoom level to use (default to street level 15 if automatic)
+        // Determine the zoom level to use
         const effectiveZoomLevel = autoZoom ? 15 : zoomLevel;
 
-        // Special handling for drawing mode - zoom to user location at street level
+        // For drawing mode, we'll let the IntegratedDrawingManager handle location coordination
+        // This should prevent the Washington DC fallback issues by ensuring better timing
         if (enableDrawing) {
-            // Create a hash to prevent multiple geolocation requests
-            const drawingDataHash = JSON.stringify({
-                enableDrawing: true,
-                autoZoom,
-                mapReady: isMapReady()
-            });
-
-            if (drawingDataHash === boundsSetForDataHash) {
-                return; // Already handled this drawing mode setup
-            }
-
-            console.log("SetBoundsComponent: Drawing mode enabled - attempting to get user location");
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    position => {
-                        const userLat = position.coords.latitude;
-                        const userLng = position.coords.longitude;
-                        console.log(
-                            `SetBoundsComponent: Got user location: ${userLat}, ${userLng} - zooming to street level`
-                        );
-
-                        // Ensure map is still ready before setting view
-                        if (isMapReady()) {
-                            // Zoom to user location at street level (zoom 16-17 is good for drawing)
-                            map.setView([userLat, userLng], 16);
-                            setBoundsSetForDataHash(drawingDataHash);
-                        }
-                    },
-                    error => {
-                        console.debug("SetBoundsComponent: Failed to get user location:", error.message);
-                        // Fallback: set a reasonable zoom level at current map center
-                        if (isMapReady()) {
-                            map.setZoom(16);
-                            setBoundsSetForDataHash(drawingDataHash);
-                        }
-                    },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 60000 // Cache location for 1 minute
-                    }
-                );
-            } else {
-                console.warn("SetBoundsComponent: Geolocation not supported - using default zoom");
-                if (isMapReady()) {
-                    map.setZoom(16);
-                    setBoundsSetForDataHash(drawingDataHash);
-                }
-            }
-            return;
+            console.log("SetBoundsComponent: Drawing mode enabled - skipping separate location handling");
+            return; // Let IntegratedDrawingManager handle location coordination
         }
 
         // Handle zoomTo option when not in drawing mode
@@ -737,7 +940,7 @@ export function LeafletMap(props: LeafletProps): ReactElement {
                     <MapInitializer />
                     {features && <GeoJSONLayer features={features} featureHighlightColor={featureHighlightColor} />}
                     {enableDrawing && (
-                        <LeafletDrawing
+                        <IntegratedDrawingManager
                             enableDrawing={enableDrawing}
                             drawingTools={drawingTools}
                             drawnGeoJSONAttribute={drawnGeoJSONAttribute}
