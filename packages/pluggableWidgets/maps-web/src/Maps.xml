@@ -262,6 +262,29 @@
                         <enumerationValue key="hereMaps">Here Maps</enumerationValue>
                     </enumerationValues>
                 </property>
+                <property key="mapboxStyle" type="enumeration" defaultValue="satelliteStreets">
+                    <caption>Mapbox style</caption>
+                    <description>Select the Mapbox map style. Only applies when Map provider is set to Map box.</description>
+                    <enumerationValues>
+                        <enumerationValue key="streets">Streets</enumerationValue>
+                        <enumerationValue key="outdoors">Outdoors</enumerationValue>
+                        <enumerationValue key="light">Light</enumerationValue>
+                        <enumerationValue key="dark">Dark</enumerationValue>
+                        <enumerationValue key="satellite">Satellite</enumerationValue>
+                        <enumerationValue key="satelliteStreets">Satellite Streets</enumerationValue>
+                        <enumerationValue key="navigationDay">Navigation Day</enumerationValue>
+                        <enumerationValue key="navigationNight">Navigation Night</enumerationValue>
+                    </enumerationValues>
+                </property>
+                <property key="mapboxTileSize" type="enumeration" defaultValue="standard">
+                    <caption>Mapbox tile quality</caption>
+                    <description>Select tile size for Mapbox. Smaller tiles provide higher detail but increase API costs. Only applies when Map provider is set to Map box.</description>
+                    <enumerationValues>
+                        <enumerationValue key="highDetail">High Detail (256px) - 4x cost</enumerationValue>
+                        <enumerationValue key="standard">Standard (512px)</enumerationValue>
+                        <enumerationValue key="lowDetail">Low Detail (1024px)</enumerationValue>
+                    </enumerationValues>
+                </property>
                 <property key="googleMapId" type="string" required="true">
                     <caption>Google MapId key</caption>
                     <description>Used to render and style the Google map. This MapId key from Google can be found in https://developers.google.com/maps/documentation/get-map-id</description>

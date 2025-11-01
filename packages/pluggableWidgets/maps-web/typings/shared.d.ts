@@ -1,6 +1,6 @@
 import { Dimensions } from "@mendix/widget-plugin-platform/utils/get-dimensions";
 import { CSSProperties } from "react";
-import { GeoJSONFeaturesType, DrawingToolsEnum } from "./MapsProps";
+import { GeoJSONFeaturesType, DrawingToolsEnum, MapProviderEnum, MapboxStyleEnum, MapboxTileSizeEnum } from "./MapsProps";
 import { ActionValue, EditableValue } from "mendix";
 export interface ModeledMarker {
     address?: string;
@@ -67,6 +67,9 @@ export interface SharedProps extends Dimensions {
     currentLocation?: Marker;
     locations: Marker[];
     mapsToken?: string;
+    mapProvider: MapProviderEnum;
+    mapboxStyle: MapboxStyleEnum;
+    mapboxTileSize: MapboxTileSizeEnum;
     className?: string;
     style?: CSSProperties;
     features: GeoJSONFeature[];

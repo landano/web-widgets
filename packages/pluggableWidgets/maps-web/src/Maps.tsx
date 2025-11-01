@@ -49,6 +49,8 @@ export default function Maps(props: MapsContainerProps): ReactNode {
             mapsToken={props.apiKeyExp?.value ?? props.apiKey}
             mapId={props.googleMapId}
             mapProvider={props.mapProvider}
+            mapboxStyle={props.mapboxStyle}
+            mapboxTileSize={props.mapboxTileSize}
             mapTypeControl={props.mapTypeControl}
             optionDrag={props.optionDrag}
             optionScroll={props.optionScroll}

@@ -31,8 +31,8 @@ export function baseMapLayer(mapProvider: MapProviderEnum, mapsToken?: string): 
             id: "mapbox/satellite-streets-v12",
             tileSize: 512,
             zoomOffset: -1,
-            maxNativeZoom: 20, // Mapbox supports higher native zoom
-            maxZoom: 22 // Allow oversampling beyond native zoom
+            maxNativeZoom: 20,
+            maxZoom: 22
         };
     } else if (mapProvider === "hereMaps") {
         if (mapsToken && mapsToken.indexOf(",") > 0) {

@@ -48,6 +48,10 @@ export type ZoomToEnum = "currentLocation" | "markers";
 
 export type MapProviderEnum = "googleMaps" | "openStreet" | "mapBox" | "hereMaps";
 
+export type MapboxStyleEnum = "streets" | "outdoors" | "light" | "dark" | "satellite" | "satelliteStreets" | "navigationDay" | "navigationNight";
+
+export type MapboxTileSizeEnum = "highDetail" | "standard" | "lowDetail";
+
 export interface FeaturesType {
     featureDS?: ListValue;
     geoJSON?: ListAttributeValue<string>;
@@ -127,6 +131,8 @@ export interface MapsContainerProps {
     zoom: ZoomEnum;
     zoomTo: ZoomToEnum;
     mapProvider: MapProviderEnum;
+    mapboxStyle: MapboxStyleEnum;
+    mapboxTileSize: MapboxTileSizeEnum;
     googleMapId: string;
     features: FeaturesType[];
     featureHighlightColor: string;
@@ -172,6 +178,8 @@ export interface MapsPreviewProps {
     zoom: ZoomEnum;
     zoomTo: ZoomToEnum;
     mapProvider: MapProviderEnum;
+    mapboxStyle: MapboxStyleEnum;
+    mapboxTileSize: MapboxTileSizeEnum;
     googleMapId: string;
     features: FeaturesPreviewType[];
     featureHighlightColor: string;
