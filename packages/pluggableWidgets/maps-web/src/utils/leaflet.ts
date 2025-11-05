@@ -1,5 +1,5 @@
 import { TileLayerProps } from "react-leaflet";
-import { MapProviderEnum } from "../../typings/MapsProps";
+import { MapProviderEnum, MapboxStyleEnum, MapboxTileSizeEnum } from "../../typings/MapsProps";
 
 const customUrls = {
     openStreetMap: "https://{s}.tile.osm.org/{z}/{x}/{y}.png",
@@ -14,23 +14,80 @@ const mapAttr = {
     hereMapsAttr: "Map &copy; 1987-2020 <a href='https://developer.here.com'>HERE</a>"
 };
 
-export function baseMapLayer(mapProvider: MapProviderEnum, mapsToken?: string): TileLayerProps {
+export function baseMapLayer(
+    mapProvider: MapProviderEnum,
+    mapsToken?: string,
+    mapboxStyle?: MapboxStyleEnum,
+    mapboxTileSize?: MapboxTileSizeEnum
+): TileLayerProps {
     let url;
     let attribution;
     let apiKey = "";
 
     if (mapProvider === "mapBox") {
+        // Map enum keys to actual Mapbox style IDs
+        const styleMapping: Record<string, string> = {
+            streets: "streets-v12",
+            outdoors: "outdoors-v12",
+            light: "light-v11",
+            dark: "dark-v11",
+            satellite: "satellite-v9",
+            satelliteStreets: "satellite-streets-v12",
+            navigationDay: "navigation-day-v1",
+            navigationNight: "navigation-night-v1"
+        };
+
+        // Use the selected style or fallback to satellite-streets-v12
+        const selectedStyleKey = mapboxStyle || "satelliteStreets";
+        const actualStyleId = styleMapping[selectedStyleKey] || "satellite-streets-v12";
+
+        // Map tile size enum to actual values and zoom offsets
+        const tileSizeConfigs: Record<
+            string,
+            { tileSize: number; zoomOffset: number; urlModifier: (url: string) => string }
+        > = {
+            highDetail: {
+                tileSize: 256,
+                zoomOffset: 0,
+                urlModifier: url => url.replace("/tiles/{z}", "/tiles/256/{z}")
+            },
+            standard: {
+                tileSize: 512,
+                zoomOffset: -1,
+                urlModifier: url => url // No modification for 512px (default)
+            },
+            retina: {
+                tileSize: 512,
+                zoomOffset: -1,
+                urlModifier: url => url.replace("/{z}/{x}/{y}", "/{z}/{x}/{y}@2x")
+            }
+        };
+
+        // Use the selected tile size or fallback to standard
+        const selectedTileSizeKey = mapboxTileSize || "standard";
+        const config = tileSizeConfigs[selectedTileSizeKey] || tileSizeConfigs.standard;
+
+        // Build URL based on tile size configuration
+        let baseUrl = customUrls.mapbox;
+        baseUrl = config.urlModifier(baseUrl);
+
         if (mapsToken) {
             apiKey = `?access_token=${mapsToken}`;
         }
-        url = customUrls.mapbox + apiKey;
+        url = baseUrl + apiKey;
         attribution = mapAttr.mapboxAttr;
+
+        console.log(`[Mapbox Config] Style: ${selectedStyleKey} -> ${actualStyleId}`);
+        console.log(`[Mapbox Config] Tile Size: ${selectedTileSizeKey} -> ${config.tileSize}px`);
+        console.log(`[Mapbox Config] Zoom Offset: ${config.zoomOffset}`);
+        console.log(`[Mapbox Config] Final URL template: ${baseUrl}`);
+
         return {
             url,
             attribution,
-            id: "mapbox/satellite-streets-v12",
-            tileSize: 512,
-            zoomOffset: -1,
+            id: `mapbox/${actualStyleId}`,
+            tileSize: config.tileSize,
+            zoomOffset: config.zoomOffset,
             maxNativeZoom: 20,
             maxZoom: 22
         };

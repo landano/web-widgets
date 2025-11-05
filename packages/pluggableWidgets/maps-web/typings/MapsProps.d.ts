@@ -50,7 +50,7 @@ export type MapProviderEnum = "googleMaps" | "openStreet" | "mapBox" | "hereMaps
 
 export type MapboxStyleEnum = "streets" | "outdoors" | "light" | "dark" | "satellite" | "satelliteStreets" | "navigationDay" | "navigationNight";
 
-export type MapboxTileSizeEnum = "highDetail" | "standard" | "lowDetail";
+export type MapboxTileSizeEnum = "highDetail" | "standard" | "retina";
 
 export interface FeaturesType {
     featureDS?: ListValue;

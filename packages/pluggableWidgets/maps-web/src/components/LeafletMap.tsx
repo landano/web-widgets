@@ -816,6 +816,8 @@ export function LeafletMap(props: LeafletProps): ReactElement {
         currentLocation,
         locations,
         mapProvider,
+        mapboxStyle,
+        mapboxTileSize,
         mapsToken,
         optionScroll: scrollWheelZoom,
         optionZoomControl: zoomControl,
@@ -902,7 +904,7 @@ export function LeafletMap(props: LeafletProps): ReactElement {
                         console.log("MapContainer: Map is ready");
                     }}
                 >
-                    <TileLayer {...baseMapLayer(mapProvider, mapsToken)} />
+                    <TileLayer {...baseMapLayer(mapProvider, mapsToken, mapboxStyle, mapboxTileSize)} />
                     {locations
                         .concat(showCurrentLocation && currentLocation ? [currentLocation] : [])
                         .filter(m => !!m)

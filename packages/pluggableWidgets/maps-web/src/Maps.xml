@@ -282,7 +282,7 @@
                     <enumerationValues>
                         <enumerationValue key="highDetail">High Detail (256px) - 4x cost</enumerationValue>
                         <enumerationValue key="standard">Standard (512px)</enumerationValue>
-                        <enumerationValue key="lowDetail">Low Detail (1024px)</enumerationValue>
+                        <enumerationValue key="retina">Retina Quality (@2x/1024px) - Sharpest</enumerationValue>
                     </enumerationValues>
                 </property>
                 <property key="googleMapId" type="string" required="true">
