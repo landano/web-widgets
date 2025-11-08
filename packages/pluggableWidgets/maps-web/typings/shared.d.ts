@@ -1,4 +1,3 @@
-import { Dimensions } from "@mendix/widget-plugin-platform/utils/get-dimensions";
 import { CSSProperties } from "react";
 import { GeoJSONFeaturesType, DrawingToolsEnum, MapProviderEnum, MapboxStyleEnum, MapboxTileSizeEnum } from "./MapsProps";
 import { ActionValue, EditableValue } from "mendix";
@@ -56,7 +55,7 @@ export interface DrawingProps {
 }
 
 
-export interface SharedProps extends Dimensions {
+export interface SharedProps {
     autoZoom: boolean;
     optionZoomControl: boolean;
     zoomLevel: number;

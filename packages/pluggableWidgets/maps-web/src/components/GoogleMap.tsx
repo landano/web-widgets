@@ -12,7 +12,6 @@ import {
     useMap
 } from "@vis.gl/react-google-maps";
 import { Marker, SharedProps } from "../../typings/shared";
-import { getDimensions } from "@mendix/widget-plugin-platform/utils/get-dimensions";
 
 export interface GoogleMapsProps extends SharedProps {
     mapId: string;
@@ -113,24 +112,22 @@ function GoogleMap(props: GoogleMapsProps): ReactElement {
     };
 
     return (
-        <div className={classNames("widget-maps", className)} style={{ ...style, ...getDimensions(props) }}>
-            <div className="widget-google-maps-wrapper">
-                {isLoaded ? (
-                    <GoogleMapComponent {...mapOptions}>
-                        {locations
-                            .concat(showCurrentLocation && currentLocation ? [currentLocation] : [])
-                            .filter(m => !!m)
-                            .map(marker => (
-                                <GoogleMapsMarker
-                                    key={`marker_${marker.id ?? marker.latitude + "_" + marker.longitude}`}
-                                    {...marker}
-                                />
-                            ))}
-                    </GoogleMapComponent>
-                ) : (
-                    <div className="spinner" />
-                )}
-            </div>
+        <div className={classNames("widget-maps", className)} style={style}>
+            {isLoaded ? (
+                <GoogleMapComponent {...mapOptions}>
+                    {locations
+                        .concat(showCurrentLocation && currentLocation ? [currentLocation] : [])
+                        .filter(m => !!m)
+                        .map(marker => (
+                            <GoogleMapsMarker
+                                key={`marker_${marker.id ?? marker.latitude + "_" + marker.longitude}`}
+                                {...marker}
+                            />
+                        ))}
+                </GoogleMapComponent>
+            ) : (
+                <div className="spinner" />
+            )}
         </div>
     );
 }

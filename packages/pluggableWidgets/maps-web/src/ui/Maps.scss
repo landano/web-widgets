@@ -1,6 +1,33 @@
 // Leaflet-draw CSS is imported in LeafletMap.tsx
 
-.widget-google-maps-wrapper {
+.widget-maps {
+    /* Use flexbox for stable height handling */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    /* Ensure minimum usable height */
+    min-height: 250px;
+
+    /* Position relative for any absolute positioned children */
+    position: relative;
+
+    /* Default height when no explicit height is set */
+    height: 400px;
+
+    /* 
+     * Studio Pro will override this default via inline styles
+     * Percentage heights (like 80%) will work if parent has defined height
+     * If parent has no height, percentage falls back to min-height (expected behavior)
+     */
+}
+
+/**
+ * Google Maps - flex child that fills available space
+ */
+.widget-maps > div[class*="api-provider"] {
+    /* Flex item that grows to fill parent */
+    flex: 1;
     width: 100%;
     height: 100%;
 }
@@ -9,47 +36,6 @@
     position: absolute;
     z-index: 10;
     width: 100%;
-}
-
-.widget-google-maps-wrapper > div {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-}
-
-.widget-maps {
-    position: relative;
-    min-height: 350px;
-    height: 350px; /* Explicit height as fallback */
-
-    /* Ensure the widget has dimensions even when no explicit size is set */
-    &:not([style*="height"]) {
-        height: 350px !important;
-    }
-
-    /* Handle cases where getDimensions returns height: auto or 0 */
-    &[style*="height: auto"],
-    &[style*="height: 0"] {
-        height: 350px !important;
-    }
-
-    /* Handle "percentage of width" layout (padding-bottom trick) */
-    &[style*="padding-bottom"] {
-        height: auto !important; /* Let padding-bottom control height */
-
-        .widget-leaflet-maps-wrapper {
-            /* Position absolutely to fill the space created by padding-bottom */
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-        }
-    }
 }
 
 /**
@@ -63,22 +49,17 @@
 }
 
 /**
-Leaflet maps
+ * Leaflet maps - flex child that fills available space
  */
-.widget-leaflet-maps-wrapper {
-    width: 100%;
-    height: 100%;
-}
-
 .widget-leaflet-maps {
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    position: absolute;
-    z-index: 1;
+    /* Flex item that grows to fill parent */
+    flex: 1;
     width: 100%;
     height: 100%;
+
+    /* Ensure leaflet renders properly */
+    position: relative;
+    z-index: 1;
 }
 
 .widget-leaflet-maps-alert.leaflet-control {

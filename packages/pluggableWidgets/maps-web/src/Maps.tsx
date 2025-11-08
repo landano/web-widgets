@@ -43,8 +43,6 @@ export default function Maps(props: MapsContainerProps): ReactNode {
             className={props.class}
             currentLocation={currentLocation}
             fullscreenControl={props.fullScreenControl}
-            height={props.height}
-            heightUnit={props.heightUnit}
             locations={locations}
             mapsToken={props.apiKeyExp?.value ?? props.apiKey}
             mapId={props.googleMapId}
@@ -59,8 +57,6 @@ export default function Maps(props: MapsContainerProps): ReactNode {
             showCurrentLocation={props.showCurrentLocation}
             streetViewControl={props.optionStreetView}
             style={props.style}
-            width={props.width}
-            widthUnit={props.widthUnit}
             zoomLevel={translateZoom(props.zoom)}
             zoomTo={props.zoomTo}
             features={features}

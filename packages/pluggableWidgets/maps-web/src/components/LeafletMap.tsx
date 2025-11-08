@@ -2,7 +2,6 @@ import { createElement, ReactElement, useCallback, useEffect, useRef, useState }
 import { FeatureCollection } from "geojson";
 import { GeoJSON, MapContainer, Marker as MarkerComponent, Popup, TileLayer, useMap } from "react-leaflet";
 import classNames from "classnames";
-import { getDimensions } from "@mendix/widget-plugin-platform/utils/get-dimensions";
 import { GeoJSONFeature, SharedPropsWithDrawing } from "../../typings/shared";
 import { MapProviderEnum } from "../../typings/MapsProps";
 import { DivIcon, geoJSON, latLngBounds, Icon as LeafletIcon, LatLngBounds, DomEvent } from "leaflet";
@@ -841,130 +840,84 @@ export function LeafletMap(props: LeafletProps): ReactElement {
     console.log(`LeafletMap: Using maxZoom ${maxZoom} for provider ${mapProvider}`);
     console.log("[LeafletMap] Features: ", features);
 
-    // Debug dimensions
-    const dimensions = getDimensions(props);
-    console.log("LeafletMap: getDimensions result:", dimensions);
     console.log("LeafletMap: style prop:", style);
-    console.log("LeafletMap: width/height props:", {
-        width: props.width,
-        widthUnit: props.widthUnit,
-        height: props.height,
-        heightUnit: props.heightUnit
-    });
-
-    // Handle Mendix dimension system properly
-    const ensuredDimensions = { ...dimensions };
-
-    // Check if height unit is "percentage of width" (which uses padding-bottom trick)
-    const isPercentageOfWidth = props.heightUnit === "percentageOfWidth";
-
-    if (isPercentageOfWidth) {
-        console.log("LeafletMap: Detected 'percentage of width' height unit - converting to explicit height");
-
-        // For "percentage of width", Mendix uses padding-bottom trick
-        // But Leaflet needs explicit height, so we convert it
-        const paddingValue = ensuredDimensions.paddingBottom;
-
-        if (paddingValue) {
-            // Keep the padding-bottom for layout, but also set explicit height
-            // This allows the aspect ratio to work while giving Leaflet a real height
-            ensuredDimensions.height = "100%";
-            ensuredDimensions.minHeight = "200px"; // Minimum reasonable height
-
-            console.log("LeafletMap: Converted percentage-of-width to hybrid layout:", {
-                paddingBottom: paddingValue,
-                height: ensuredDimensions.height,
-                minHeight: ensuredDimensions.minHeight
-            });
-        }
-    } else {
-        // For other height units, ensure we have a reasonable height
-        if (!ensuredDimensions.height || ensuredDimensions.height === "auto" || ensuredDimensions.height === 0) {
-            ensuredDimensions.height = "350px";
-            ensuredDimensions.minHeight = "350px";
-        }
-    }
-
-    console.log("LeafletMap: Final dimensions:", ensuredDimensions);
 
     return (
-        <div className={classNames("widget-maps", className)} style={{ ...style, ...ensuredDimensions }}>
-            <div className="widget-leaflet-maps-wrapper">
-                <MapContainer
-                    attributionControl={attributionControl}
-                    center={center}
-                    className="widget-leaflet-maps"
-                    dragging={dragging}
-                    maxZoom={maxZoom}
-                    minZoom={1}
-                    scrollWheelZoom={scrollWheelZoom}
-                    zoom={zoom}
-                    zoomControl={zoomControl}
-                    whenReady={() => {
-                        console.log("MapContainer: Map is ready");
-                    }}
-                >
-                    <TileLayer {...baseMapLayer(mapProvider, mapsToken, mapboxStyle, mapboxTileSize)} />
-                    {locations
-                        .concat(showCurrentLocation && currentLocation ? [currentLocation] : [])
-                        .filter(m => !!m)
-                        .map(marker => (
-                            <MarkerComponent
-                                icon={
-                                    marker.url
-                                        ? new DivIcon({
-                                              html: `<img src="${marker.url}" class="custom-leaflet-map-icon-marker-icon" alt="map marker" />`,
-                                              className: "custom-leaflet-map-icon-marker",
-                                              iconSize: [32, 32], // Set proper icon size
-                                              iconAnchor: [16, 32] // Anchor at bottom center of icon
-                                          })
-                                        : defaultMarkerIcon
-                                }
-                                interactive={!!marker.title || !!marker.onClick}
-                                key={`marker_${marker.id ?? marker.latitude + "_" + marker.longitude}`}
-                                eventHandlers={
-                                    marker.title ? undefined : marker.onClick ? { click: marker.onClick } : undefined
-                                }
-                                position={{ lat: marker.latitude, lng: marker.longitude }}
-                                title={marker.title}
-                            >
-                                {marker.title && (
-                                    <Popup>
-                                        <span
-                                            style={{ cursor: marker.onClick ? "pointer" : "none" }}
-                                            onClick={marker.onClick}
-                                        >
-                                            {marker.title}
-                                        </span>
-                                    </Popup>
-                                )}
-                            </MarkerComponent>
-                        ))}
-                    <SetBoundsComponent
-                        autoZoom={autoZoom}
-                        currentLocation={currentLocation}
-                        locations={locations}
-                        features={features}
+        <div className={classNames("widget-maps", className)} style={style}>
+            <MapContainer
+                attributionControl={attributionControl}
+                center={center}
+                className="widget-leaflet-maps"
+                dragging={dragging}
+                maxZoom={maxZoom}
+                minZoom={1}
+                scrollWheelZoom={scrollWheelZoom}
+                zoom={zoom}
+                zoomControl={zoomControl}
+                whenReady={() => {
+                    console.log("MapContainer: Map is ready");
+                }}
+            >
+                <TileLayer {...baseMapLayer(mapProvider, mapsToken, mapboxStyle, mapboxTileSize)} />
+                {locations
+                    .concat(showCurrentLocation && currentLocation ? [currentLocation] : [])
+                    .filter(m => !!m)
+                    .map(marker => (
+                        <MarkerComponent
+                            icon={
+                                marker.url
+                                    ? new DivIcon({
+                                          html: `<img src="${marker.url}" class="custom-leaflet-map-icon-marker-icon" alt="map marker" />`,
+                                          className: "custom-leaflet-map-icon-marker",
+                                          iconSize: [32, 32], // Set proper icon size
+                                          iconAnchor: [16, 32] // Anchor at bottom center of icon
+                                      })
+                                    : defaultMarkerIcon
+                            }
+                            interactive={!!marker.title || !!marker.onClick}
+                            key={`marker_${marker.id ?? marker.latitude + "_" + marker.longitude}`}
+                            eventHandlers={
+                                marker.title ? undefined : marker.onClick ? { click: marker.onClick } : undefined
+                            }
+                            position={{ lat: marker.latitude, lng: marker.longitude }}
+                            title={marker.title}
+                        >
+                            {marker.title && (
+                                <Popup>
+                                    <span
+                                        style={{ cursor: marker.onClick ? "pointer" : "none" }}
+                                        onClick={marker.onClick}
+                                    >
+                                        {marker.title}
+                                    </span>
+                                </Popup>
+                            )}
+                        </MarkerComponent>
+                    ))}
+                <SetBoundsComponent
+                    autoZoom={autoZoom}
+                    currentLocation={currentLocation}
+                    locations={locations}
+                    features={features}
+                    enableDrawing={enableDrawing}
+                    zoomTo={zoomTo}
+                    zoomLevel={zoom}
+                    showCurrentLocation={showCurrentLocation}
+                />
+                <ExposeMapInstance />
+                <MapInitializer />
+                {features && <GeoJSONLayer features={features} featureHighlightColor={featureHighlightColor} />}
+                {enableDrawing && (
+                    <IntegratedDrawingManager
                         enableDrawing={enableDrawing}
-                        zoomTo={zoomTo}
-                        zoomLevel={zoom}
-                        showCurrentLocation={showCurrentLocation}
+                        drawingTools={drawingTools}
+                        drawnGeoJSONAttribute={drawnGeoJSONAttribute}
+                        onDrawComplete={onDrawComplete}
+                        allowEdit={allowEdit}
+                        allowDelete={allowDelete}
                     />
-                    <ExposeMapInstance />
-                    <MapInitializer />
-                    {features && <GeoJSONLayer features={features} featureHighlightColor={featureHighlightColor} />}
-                    {enableDrawing && (
-                        <IntegratedDrawingManager
-                            enableDrawing={enableDrawing}
-                            drawingTools={drawingTools}
-                            drawnGeoJSONAttribute={drawnGeoJSONAttribute}
-                            onDrawComplete={onDrawComplete}
-                            allowEdit={allowEdit}
-                            allowDelete={allowDelete}
-                        />
-                    )}
-                </MapContainer>
-            </div>
+                )}
+            </MapContainer>
         </div>
     );
 }

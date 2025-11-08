@@ -38,10 +38,6 @@ export interface DynamicMarkersType {
     customMarkerDynamic?: DynamicValue<WebImage>;
 }
 
-export type WidthUnitEnum = "percentage" | "pixels";
-
-export type HeightUnitEnum = "percentageOfWidth" | "pixels" | "percentageOfParent";
-
 export type ZoomEnum = "automatic" | "world" | "continent" | "city" | "street" | "buildings";
 
 export type ZoomToEnum = "currentLocation" | "markers";
@@ -124,10 +120,6 @@ export interface MapsContainerProps {
     mapTypeControl: boolean;
     fullScreenControl: boolean;
     rotateControl: boolean;
-    widthUnit: WidthUnitEnum;
-    width: number;
-    heightUnit: HeightUnitEnum;
-    height: number;
     zoom: ZoomEnum;
     zoomTo: ZoomToEnum;
     mapProvider: MapProviderEnum;
@@ -171,10 +163,6 @@ export interface MapsPreviewProps {
     mapTypeControl: boolean;
     fullScreenControl: boolean;
     rotateControl: boolean;
-    widthUnit: WidthUnitEnum;
-    width: number | null;
-    heightUnit: HeightUnitEnum;
-    height: number | null;
     zoom: ZoomEnum;
     zoomTo: ZoomToEnum;
     mapProvider: MapProviderEnum;
