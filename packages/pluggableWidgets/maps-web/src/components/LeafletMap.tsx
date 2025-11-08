@@ -134,40 +134,70 @@ function IntegratedDrawingManager(
             try {
                 console.log("IntegratedDrawingManager: Initializing drawing controls");
 
+                // Disable the fucking intersection error message
+                if ((window as any).L && (window as any).L.drawLocal) {
+                    (window as any).L.drawLocal.draw.handlers.polyline.error = "";
+                }
+
                 // Initialize drawn items feature group
                 const drawnItems = new L.FeatureGroup();
                 map.addLayer(drawnItems);
                 drawnItemsRef.current = drawnItems;
 
-                // Configure drawing options
+                // Configure drawing options - using exact working configuration from original LeafletDrawing.tsx
                 const drawOptions =
                     drawingTools === "all"
                         ? {
                               polygon: {
-                                  allowIntersection: false,
-                                  showArea: false,
-                                  shapeOptions: { color: "#2E7D32", fillColor: "#81C784", fillOpacity: 0.3, weight: 3 }
+                                  allowIntersection: true,
+                                  showArea: false, // Disable area calculation to avoid measurement errors
+                                  shapeOptions: {
+                                      color: "#2E7D32",
+                                      fillColor: "#81C784",
+                                      fillOpacity: 0.3,
+                                      weight: 3
+                                  }
                               },
                               rectangle: {
-                                  shapeOptions: { color: "#1565C0", fillColor: "#42A5F5", fillOpacity: 0.3, weight: 3 }
+                                  shapeOptions: {
+                                      color: "#1565C0",
+                                      fillColor: "#42A5F5",
+                                      fillOpacity: 0.3,
+                                      weight: 3
+                                  }
                               },
-                              polyline: { shapeOptions: { color: "#E91E63", weight: 4 } },
+                              polyline: {
+                                  shapeOptions: {
+                                      color: "#E91E63",
+                                      weight: 4
+                                  }
+                              },
                               circle: {
-                                  shapeOptions: { color: "#7B1FA2", fillColor: "#BA68C8", fillOpacity: 0.3, weight: 3 }
+                                  shapeOptions: {
+                                      color: "#7B1FA2",
+                                      fillColor: "#BA68C8",
+                                      fillOpacity: 0.3,
+                                      weight: 3
+                                  }
                               },
-                              circlemarker: false,
+                              circlemarker: false, // Explicitly disable circlemarker
                               marker: true
                           }
                         : {
                               polygon: {
-                                  allowIntersection: false,
-                                  showArea: false,
-                                  shapeOptions: { color: "#2E7D32", fillColor: "#81C784", fillOpacity: 0.3, weight: 3 }
+                                  allowIntersection: true,
+                                  showArea: false, // Disable area calculation to avoid measurement errors
+                                  shapeOptions: {
+                                      color: "#2E7D32",
+                                      fillColor: "#81C784",
+                                      fillOpacity: 0.3,
+                                      weight: 3
+                                  }
                               },
                               rectangle: false,
                               polyline: false,
                               circle: false,
-                              circlemarker: false,
+                              circlemarker: false, // Explicitly disable circlemarker
                               marker: false
                           };
 
@@ -187,6 +217,11 @@ function IntegratedDrawingManager(
                         remove: allowDelete !== false ? {} : false
                     }
                 });
+
+                // Disable the annoying intersection error message that shows on first click
+                if ((window as any).L && (window as any).L.drawLocal) {
+                    (window as any).L.drawLocal.draw.handlers.polyline.error = "";
+                }
 
                 map.addControl(drawControl);
                 drawControlRef.current = drawControl;
