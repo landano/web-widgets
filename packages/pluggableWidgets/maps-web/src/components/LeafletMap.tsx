@@ -134,7 +134,7 @@ function IntegratedDrawingManager(
             try {
                 console.log("IntegratedDrawingManager: Initializing drawing controls");
 
-                // Disable the fucking intersection error message
+                // Disable the intersection error message
                 if ((window as any).L && (window as any).L.drawLocal) {
                     (window as any).L.drawLocal.draw.handlers.polyline.error = "";
                 }
@@ -217,11 +217,6 @@ function IntegratedDrawingManager(
                         remove: allowDelete !== false ? {} : false
                     }
                 });
-
-                // Disable the annoying intersection error message that shows on first click
-                if ((window as any).L && (window as any).L.drawLocal) {
-                    (window as any).L.drawLocal.draw.handlers.polyline.error = "";
-                }
 
                 map.addControl(drawControl);
                 drawControlRef.current = drawControl;
